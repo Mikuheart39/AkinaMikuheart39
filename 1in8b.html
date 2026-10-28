@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《1in8b》模擬人生與全球議題線上學習單測驗</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter & Noto Sans TC -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 自訂印表機列印樣式 */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; font-size: 12pt; }
+            .card-box { border: 1px solid #ccc !important; shadow: none !important; break-inside: avoid; }
+            .explanation-box { display: block !important; }
+        }
+        /* 避免 Touch 事件雙擊縮放 */
+        button, label { touch-action: manipulation; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-16">
+
+    <!-- 頂部固定導覽與進度條 -->
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur shadow-sm border-b border-slate-200 no-print">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center text-white font-bold text-xl shadow-md shadow-brand-500/20">
+                    1/8b
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">《1in8b》模擬人生線上學習單</h1>
+                    <p class="text-xs text-slate-500">地理背景 · 人生抉擇 · 資產配置 · 負債生存 · 幸福終局</p>
+                </div>
+            </div>
+
+            <!-- 進度顯示 -->
+            <div class="text-right">
+                <div class="text-xs font-medium text-slate-500 mb-1">
+                    完成度: <span id="progress-text" class="font-bold text-brand-600">0</span> / 30 題
+                </div>
+                <div class="w-28 sm:w-40 bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="bg-brand-600 h-full w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主體內容區塊 -->
+    <main class="max-w-4xl mx-auto px-4 pt-6">
+
+        <!-- 學生資訊填寫卡片 -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 mb-6">
+            <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                <i class="fa-solid fa-id-card text-brand-500 mr-2"></i> 學生個人基本資料
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">班級</label>
+                    <input type="text" id="student-class" placeholder="例：高二 3 班" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">座號</label>
+                    <input type="text" id="student-no" placeholder="例：15" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">姓名</label>
+                    <input type="text" id="student-name" placeholder="請輸入姓名" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm">
+                </div>
+            </div>
+        </div>
+
+        <!-- 測驗結果成績統計卡片 (預設隱藏，交卷後顯示) -->
+        <div id="result-card" class="hidden bg-gradient-to-br from-brand-700 to-indigo-800 text-white rounded-2xl shadow-xl p-6 mb-8 transform transition-all">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="text-center md:text-left mb-4 md:mb-0">
+                    <span class="inline-block px-3 py-1 bg-white/20 rounded-full text-xs font-semibold tracking-wider uppercase mb-2">測驗完成成績單</span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold" id="result-student-info">學生個人成績</h2>
+                    <p class="text-brand-100 text-sm mt-1" id="result-grade-eval">評語計算中...</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="bg-white/10 backdrop-blur rounded-2xl p-4 text-center min-w-[120px] border border-white/20">
+                        <div class="text-xs text-brand-100">選擇題得分</div>
+                        <div class="text-4xl font-black text-amber-300 mt-1" id="final-score">0</div>
+                        <div class="text-[10px] text-brand-200">/ 總分 100 分</div>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur rounded-2xl p-4 text-center min-w-[120px] border border-white/20">
+                        <div class="text-xs text-brand-100">答對題數</div>
+                        <div class="text-4xl font-black text-emerald-300 mt-1" id="correct-count">0</div>
+                        <div class="text-[10px] text-brand-200">/ 共 25 題</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 pt-4 border-t border-white/20 flex flex-wrap gap-3 justify-end no-print">
+                <button onclick="window.print()" class="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-xl text-sm font-semibold transition flex items-center">
+                    <i class="fa-solid fa-print mr-2"></i> 列印 / 匯出 PDF
+                </button>
+                <button onclick="confirmReset()" class="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-sm font-semibold transition flex items-center">
+                    <i class="fa-solid fa-rotate-right mr-2"></i> 重新作答
+                </button>
+            </div>
+        </div>
+
+        <!-- 分類導引頁籤 (快速錨點) -->
+        <div class="flex space-x-2 overflow-x-auto pb-3 mb-4 no-print scrollbar-none">
+            <a href="#sec-1" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-600 whitespace-nowrap hover:border-brand-500 hover:text-brand-600 shadow-sm transition">一、出生地與地理</a>
+            <a href="#sec-2" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-600 whitespace-nowrap hover:border-brand-500 hover:text-brand-600 shadow-sm transition">二、人生重要抉擇</a>
+            <a href="#sec-3" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-600 whitespace-nowrap hover:border-brand-500 hover:text-brand-600 shadow-sm transition">三、資產配置投資</a>
+            <a href="#sec-4" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-600 whitespace-nowrap hover:border-brand-500 hover:text-brand-600 shadow-sm transition">四、負債工作生存</a>
+            <a href="#sec-5" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-600 whitespace-nowrap hover:border-brand-500 hover:text-brand-600 shadow-sm transition">五、婚姻家庭幸福</a>
+        </div>
+
+        <!-- 題目容器 -->
+        <form id="quiz-form" onsubmit="return false;">
+            <div id="questions-container" class="space-y-8"></div>
+
+            <!-- 測驗提交按鈕區塊 -->
+            <div class="mt-10 mb-16 text-center no-print">
+                <button type="button" id="submit-btn" onclick="submitQuiz()" class="px-8 py-4 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white text-lg font-bold rounded-2xl shadow-xl shadow-brand-500/25 hover:shadow-2xl hover:shadow-brand-500/35 transform hover:-translate-y-0.5 transition active:translate-y-0 w-full sm:w-auto min-w-[280px]">
+                    <i class="fa-solid fa-paper-plane mr-2"></i> 提交測驗與檢視答案解析
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <!-- 自訂提示/確認 Modal -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center transform transition-all">
+            <div id="modal-icon" class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 id="modal-title" class="text-lg font-bold text-slate-800 mb-2">確定要重新作答？</h3>
+            <p id="modal-desc" class="text-sm text-slate-600 mb-6">這將會清除您目前所有的作答紀錄與成績。</p>
+            <div class="flex space-x-3">
+                <button id="modal-cancel-btn" onclick="closeModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition">取消</button>
+                <button id="modal-confirm-btn" class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl text-sm transition">確定重新作答</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript 腳本區 -->
+    <script>
+        // 題目資料庫 (包含 25 題單選題與 5 題簡答題)
+        const quizData = [
+            // 第一部分
+            {
+                sectionId: "sec-1",
+                sectionTitle: "第一部分：出生地與地理人文背景（出生樂透）",
+                sectionDesc: "考驗關於各國地理機能、HDI人類發展指數與起跑線效應之理解",
+                items: [
+                    {
+                        id: 1,
+                        type: "mcq",
+                        question: "在遊戲《1in8b》中，若玩家抽到出生於印度的「邦加羅爾（Bangalore）」，根據現實地理與產業背景，該城市最著名的經濟定位為何？",
+                        options: [
+                            "全球重工業與造船中心",
+                            "印度軟體資訊與科技產業重鎮（印度矽谷）",
+                            "中東地區的金融與石油貿易樞紐",
+                            "農業出口與觀光資源最發達的沿海港口"
+                        ],
+                        answer: 1,
+                        explanation: "【解析】邦加羅爾（Bangalore）是印度德干高原上的科技重鎮，匯聚了印度本土外包巨頭（如 Infosys、Wipro）與全球科技巨擘（如 Google、Microsoft）的研發中心，因此被譽為「印度的矽谷」。"
+                    },
+                    {
+                        id: 2,
+                        type: "mcq",
+                        question: "若角色出生於巴基斯坦的「喀拉蚩（Karachi）」，該城市在該國經濟發展中所擔負的核心機能是什麼？",
+                        options: [
+                            "內陸高科技園區與晶片製造",
+                            "全國最大航運出口港口與商業金融中心",
+                            "專營綠色能源與地熱發電的試驗區",
+                            "以宗教觀光為唯一經濟支柱的古城"
+                        ],
+                        answer: 1,
+                        explanation: "【解析】喀拉蚩（Karachi）緊鄰阿拉伯海，是巴基斯坦最大都市與最核心的海港，承擔全巴基斯坦超過 60% 的對外貿易通關吞吐量，亦是金融商業龍頭。"
+                    },
+                    {
+                        id: 3,
+                        type: "mcq",
+                        question: "遊戲中「人類發展指數（HDI）」較高國家（如挪威、瑞士）出生的角色，與低 HDI 國家出生的角色相比，通常具備何種初始優勢？",
+                        options: [
+                            "遊戲時間流逝速度減半",
+                            "享有較高品質的公立教育資源與醫療保障基礎",
+                            "投資股市保證獲得 100% 的報酬率",
+                            "終生不需要支付任何生活開銷"
+                        ],
+                        answer: 1,
+                        explanation: "【解析】人類發展指數（HDI）整合了平均壽命、教育年限與人均所得。高 HDI 國家擁有完善的基礎建設、醫療防護網與公共教育資源，能為新生個體提供極高的生命與健康起跑線保障。"
+                    },
+                    {
+                        id: 4,
+                        type: "mcq",
+                        question: "了解不同國家的主要信仰文化（如印度信仰印度教、巴基斯坦信仰伊斯蘭教），對理解模擬人生中的個體決策有何幫助？",
+                        options: [
+                            "宗教信仰會直接決定國家當年的 GDP 成長率",
+                            "宗教文化會深刻影響當地的社會規範、家庭觀念與消費習慣",
+                            "信仰決定了角色是否能夠購買股票與債券",
+                            "宗教信仰會自動抵消該國的通貨膨脹率"
+                        ],
+                        answer: 1,
+                        explanation: "【解析】宗教與文化深刻制約社會生活型態，例如伊斯蘭金融原則（不收取利息）、印度教飲食規範，以及特定宗教對於生育、女性就業與家族互助機制的獨特價值觀。"
+                    },
+                    {
+                        id: 5,
+                        type: "mcq",
+                        question: "社會學與經濟學常將「出生地」稱為「出生樂透（Birth Lottery）」，這概念主要在強調什麼現象？",
+                        options: [
+                            "個人未來的成就完全由個人努力決定，與出生地無關",
+                            "個人的初始發展機會與資源，很大程度受限於出生時的地理與社會經濟環境",
+                            "只要購買彩券就能改變一個國家的整體經濟水準",
+                            "所有國家在全球化下已經達到完全平等的起跑線"
+                        ],
+                        answer: 1,
+                        explanation: "【解析】「出生樂透」是指個體無法選擇自己的出生國度與家庭背景，全球資源的不對等使得「出生在哪裡」往往直接決定了健康、壽命與經濟流動性的初始概率基礎。"
+                    },
+                    {
+                        id: 26,
+                        type: "sa",
+                        question: "【簡答題 1】請結合遊戲體驗與現實數據，說明「出生國家的經濟水準與基礎建設」如何實質影響一個角色在教育、職業與醫療上的「起跑線」？",
+                        explanation: "【參考面向】可從醫療資源（嬰兒死亡率/疫苗）、教育體系（免費義務教育/師資品質）、基礎設施（電力/網際網路）及產業結構（高薪職缺供給）等角度切入回答。"
+                    }
+                ]
+            },
+            // 第二部分
+            {
+                sectionId: "sec-2",
+                sectionTitle: "第二部分：人生重要抉擇（升學、買房與職涯）",
+                sectionDesc: "探討機會成本、財務槓桿運用、跨國移民成本與專業門檻投資",
+                items: [
+                    {
+                        id: 6,
+                        type: "mcq",
+                        question: "當角色面臨「放棄升學直接就業」或「繼續攻讀高階學位」時，經濟學上如何稱呼「為了讀書而放棄的工資收入」？",
+                        options: [
+                            "邊際效益（Marginal Benefit）",
+                            "機會成本（Opportunity Cost）",
+                            "沈沒成本（Sunk Cost）",
+                            "通貨膨脹率（Inflation Rate）"
+                        ],
+                        answer: 1,
+                        explanation: "【解析】機會成本指的是「在做出一個選擇時，所放棄的其他選擇中價值最高者」。選擇繼續升學除了需要繳納學費（直接成本），放棄就業所能獲得的薪資即為機會成本。"
+                    },
+                    {
+                        id: 7,
+                        type: "mcq",
+                        question: "在遊戲中選擇以長期房屋貸款（Mortgage）購買房產，主要代表個人採取了何種財務決策？",
+                        options: [
+                            "零風險的完全避險行為",
+                            "運用財務槓桿（Leverage）承擔長期固定負債以獲取資產",
+                            "能夠立刻實現 100% 現金流動性的理財方式",
+                            "免除所有國家稅收的合法途徑"
+                        ],
+                        answer: 1,
+                        explanation: "【解析】房貸是典型的「財務槓桿」放大器。透過付出 20% 自備款並借入 80% 銀行貸款，個人能夠控管總價龐大的不動產，同時亦必須承擔長期利息負債與房價下行之風險。"
+                    },
+                    {
+                        id: 8,
+                        type: "mcq",
+                        question: "若角色選擇「跨國移民」至高收入國家工作，通常必須承受的「非經濟成本」不包括下列何者？",
+                        options: [
+                            "語言與文化的適應壓力",
+                            "離鄉背井導致的社交與家庭支持系統斷裂",
+                            "移民國家自動贈送的無上限政府津貼",
+                            "執照認證困難或職業階級下降的風險"
+                        ],
+                        answer: 2,
+                        explanation: "【解析】移民需要支付龐大的心理與社會成本（包含社會支持網喪失、文化適應障礙與語言溝通成本），大多數國家不會無條件發放無上限政府津貼。"
+                    },
+                    {
+                        id: 9,
+                        type: "mcq",
+                        question: "選擇投入需要長期專業培訓的職業（如醫師、軟體架構師），其經濟特質通常呈現何種趨勢？",
+                        options: [
+                            "前期時間與金錢投入高，但中後期具備較高獲利能力與進入門檻",
+                            "入行門檻極低，且薪資完全不受市場供需影響",
+                            "隨時可以被無經驗者完全替代",
+                            "收入極度不穩定且沒有任何社會地位"
+                        ],
+                        answer: 0,
+                        explanation: "【解析】高專業門檻職業具有「資本與精力密集」の前置期。一旦通過嚴苛檢定取得證照或高階技術，便具備了高專業護城河，從而在職涯中後期獲取優渥報酬。"
+                    },
+                    {
+                        id: 10,
+                        type: "mcq",
+                        question: "過度消耗健康進行高強度加班以換取短期高薪，長期來看最容易引發哪種財務與人生風險？",
+                        options: [
+                            "醫療支出劇增與勞動力提前中斷風險",
+                            "國家稅率自動降為零",
+                            "房貸利息自動歸零",
+                            "個人幸福度保證達到最大值"
+                        ],
+                        answer: 0,
+                        explanation: "【解析】健康屬於個人的底層無形資產。過度過勞換取的加班費，可能在未來轉化為龐大的醫療與復健支出，甚至導致職業生涯提前報銷（失能風險）。"
+                    },
+                    {
+                        id: 27,
+                        type: "sa",
+                        question: "【簡答題 2】請寫下你在遊戲或現實中面臨過的一個「重大抉擇」（如貸款買房、轉職、攻讀學位），並運用「機會成本」概念分析你做出該決策時放棄了什麼？",
+                        explanation: "【參考面向】需精準指出「選擇項目」與「被放棄項目的最高價值」（例如選擇出國留學，其機會成本包括國內工作2年的薪資累積、陪伴家人的時間與年資積累）。"
+                    }
+                ]
+            },
+            // 第三部分
+            {
+                sectionId: "sec-3",
+                sectionTitle: "第三部分：資產配置與投資風險（理財策略）",
+                sectionDesc: "剖析通貨膨脹侵蝕、指數型基金ETF、分散風險與複利奇蹟",
+                items: [
+                    {
+                        id: 11,
+                        type: "mcq",
+                        question: "若將所有積蓄 100% 以現金形式存入銀行活期帳戶，在長期面對高通貨膨脹時，會面臨什麼主要的財務風險？",
+                        options: [
+                            "銀行會沒收所有本金",
+                            "實質購買力（Real Purchasing Power）遭通膨侵蝕而下降",
+                            "必須支付極高的股票交易手續費",
+                            "資產會以複利方式呈指數型暴增"
+                        ],
+                        answer: 1,
+                        explanation: "【解析】名目金額（存摺數字）雖然沒變，但當物價上漲速度高於銀行活存利率時，同等的現金能買到的商品服務變少，實質購買力持續縮水。"
+                    },
+                    {
+                        id: 12,
+                        type: "mcq",
+                        question: "投資「全球股票指數基金（Global Equity Index ETF）」的核心優勢是什麼？",
+                        options: [
+                            "保證每天獲利，絕不下跌",
+                            "透過分散投資全球數千家企業，降低單一公司或單一國家倒閉的風險",
+                            "完全不需要承擔任何市場波動風險",
+                            "由國家中央銀行直接負擔賠償責任"
+                        ],
+                        answer: 1,
+                        explanation: "【解析】全球指數 ETF（如 VT）透過一籃子持股橫跨各大洲數千家企業，有效消除單一企業破產的非系統性風險，跟隨全球總體經濟的長期成長。"
+                    },
+                    {
+                        id: 13,
+                        type: "mcq",
+                        question: "與股票相比，購買「政府公債（Government Bonds）」通常具備何種資產特性？",
+                        options: [
+                            "高風險、高波動、極高潛在報酬",
+                            "風險與波動相對較低，提供預期的固定利息，但長期潛在報酬低於股票",
+                            "完全無法賣出兌換現金",
+                            "報酬率與股市變化 100% 完全正相關"
+                        ],
+                        answer: 1,
+                        explanation: "【解析】由高信評國家政府發行的公債違約風險極低，提供固定債息（Fixed Income），波幅小於股票，常用作資產配置中的防守性避險工具。"
+                    },
+                    {
+                        id: 14,
+                        type: "mcq",
+                        question: "個人理財中常說「不要把雞蛋放在同一個籃子裡」，這指的理財原則是：",
+                        options: [
+                            "集中所有資金購買單一飆股",
+                            "資產配置與風險分散（Diversification）",
+                            "將所有資金轉為地下賭博",
+                            "拒絕使用任何金融工具"
+                        ],
+                        answer: 1,
+                        explanation: "【解析】分散投資（Diversification）是金融學中獲取免費午餐的唯一途徑，透過配置不同低相關性的資產，降低整體投資組合的波幅風險。"
+                    },
+                    {
+                        id: 15,
+                        type: "mcq",
+                        question: "在長期理財規劃中，讓資產發揮「複利效應（Compound Interest）」的最關鍵要素是什麼？",
+                        options: [
+                            "頻繁地在一天內買賣股票數十次",
+                            "將獲利持續再投資（Reinvest）並保持足夠長的投資時間軸",
+                            "只投資完全不給利息的產品",
+                            "每年更換一次居住國家"
+                        ],
+                        answer: 1,
+                        explanation: "【解析】複利魔力的公式基於「本金 × (1+利率)^時間」。核心在於獲利不取出繼續投入（利滾利），並透過長時間的幾何級數指數增長發揮威力。"
+                    },
+                    {
+                        id: 28,
+                        type: "sa",
+                        question: "【簡答題 3】請比較「保守型（全存銀行）」與「積極型（全投指數基金）」兩種投資策略，在「流動性」、「風險性」與「抗通膨能力」上的優缺點。",
+                        explanation: "【參考面向】全存銀行：流動性極高、名目風險極低、抗通膨能力極差；全投指數基金：流動性中/高、面臨短期市場波動風險、長期抗通膨能力優異。"
+                    }
+                ]
+            },
+            // 第四部分
+            {
+                sectionId: "sec-4",
+                sectionTitle: "第四部分：負債、工作與生存壓力（勞動與槓桿）",
+                sectionDesc: "釐清良性與不良負債、財務脆弱性、緊急預備金與非正式經濟",
+                items: [
+                    {
+                        id: 16,
+                        type: "mcq",
+                        question: "財務管理中，「良性負債（Good Debt）」與「不良負債（Bad Debt）」的核心區別為何？",
+                        options: [
+                            "良性負債由政府發行，不良負債由民間發行",
+                            "良性負債用於能產生未來現金流或增值的資產；不良負債用於高利息的消耗性消費",
+                            "只要金額超過一百萬就是不良負債",
+                            "兩者完全沒有差別，只要是負債就是壞事"
+                        ],
+                        answer: 1,
+                        explanation: "【解析】良性負債（如低利學貸、合理房貸）能創造個人生產力提升或資產增值；不良負債（如信用卡高利循環、地下借款）純粹用於買奢侈品等消耗，會侵蝕未來現金流。"
+                    },
+                    {
+                        id: 17,
+                        type: "mcq",
+                        question: "若角色的每月債務償還金額超過其月總收入的 60%，該角色會陷入何種財務困境？",
+                        options: [
+                            "高財務脆弱性（Financial Fragility），極易因突發事件導致違約破產",
+                            "最佳化資產配置狀態",
+                            "自動獲得商業銀行額外贈與的無息貸款",
+                            "國家信用評等提升至最高等級"
+                        ],
+                        answer: 0,
+                        explanation: "【解析】高負債比（Debt Ratio）大幅壓縮了個人可支配所得。一旦面對減薪、失業或急病等意外衝擊，現金流將瞬間斷裂，導致極高的破產風險。"
+                    },
+                    {
+                        id: 18,
+                        type: "mcq",
+                        question: "為什麼高專業門檻的知識型產業（如軟體架構師、專科醫師）薪資普遍高於非技術性勞動？",
+                        options: [
+                            "政府法律強制規定",
+                            "供給稀缺性、培養成本高昂以及更高的邊際生產力",
+                            "知識型產業完全不需要承擔任何工作壓力",
+                            "單純因為知識型工作者的工作時間比體力勞動者長三倍"
+                        ],
+                        answer: 1,
+                        explanation: "【解析】市場薪資由「供給與需求」決定。培養高門檻人才需要花費數年時間與大量學費，其人才稀缺性與在產業中創造的邊際價值高，因此薪資顯著高昂。"
+                    },
+                    {
+                        id: 19,
+                        type: "mcq",
+                        question: "建立「緊急預備金（Emergency Fund）」的主要功能是什麼？",
+                        options: [
+                            "用於短線炒作高風險加密貨幣",
+                            "支應 3~6 個月的基本生活開支，避免因失業或突發醫療事件被迫賤賣資產或借高利貸",
+                            "每年固定購買奢侈品的專款",
+                            "規避個人所得稅的非法手段"
+                        ],
+                        answer: 1,
+                        explanation: "【解析】緊急預備金是個人財務的防火牆。將 3 至 6 個月的必要開支保存在極高流動性的活存中，能在黑天鵝事件發生時給予生存底氣，免於被迫折價變賣投資。"
+                    },
+                    {
+                        id: 20,
+                        type: "mcq",
+                        question: "在發展中國家，許多勞工從事「非正式經濟（Informal Economy，如無合約零工）」，這對勞動者帶來什麼風險？",
+                        options: [
+                            "缺乏勞動法規保障、無社會保險與極高的收入不穩定性",
+                            "必定能獲得比正職高十倍的薪資",
+                            "免除所有個人生活成本",
+                            "自動獲得免費的各國簽證"
+                        ],
+                        answer: 0,
+                        explanation: "【解析】非正式經濟從業者沒有簽訂正規勞動合約，缺乏工傷保險、健保與退休金防護，薪資易被扣留，面臨極高的經濟脆弱性與貧窮循環風險。"
+                    },
+                    {
+                        id: 29,
+                        type: "sa",
+                        question: "【簡答題 4】當一個角色不幸陷入「高利循環負債 + 低薪高壓工作」的生存陷阱時，請列出三個可行的步驟來逐步改善其財務與生活狀況？",
+                        explanation: "【參考面向】1. 盤點財務並停用信用卡（切斷非必要消費止血）；2. 債務整合與優先清償高利負債；3. 利用業餘時間進行技能再培訓以爭取轉職跳槽。"
+                    }
+                ]
+            },
+            // 第五部分
+            {
+                sectionId: "sec-5",
+                sectionTitle: "第五部分：婚姻、家庭與幸福定義（人生終局）",
+                sectionDesc: "討論養育子女財務結構、財富與幸福度平衡、社會安全網與全人發展",
+                items: [
+                    {
+                        id: 21,
+                        type: "mcq",
+                        question: "從現代社會經濟學的角度來看，養育子女（Children）對家庭財務結構的主要影響是：",
+                        options: [
+                            "一項短期內高回報的純金融投資產品",
+                            "長期且龐大的現金流支出（教育、醫療、生活費），需要穩定的家庭財務支撐",
+                            "能讓家庭每月固定房貸支出減少 50%",
+                            "完全不影響家庭的消費與儲蓄規劃"
+                        ],
+                        answer: 1,
+                        explanation: "【解析】在現代工業與後工業社會，養育子女屬於長達 20 年以上的資本與時間持續投入（消費與人力資本投資），而非傳統農業社會中的防老金融工具。"
+                    },
+                    {
+                        id: 22,
+                        type: "mcq",
+                        question: "若一個角色在《1in8b》遊戲終局時擁有一億美元資產，但「幸福度/健康度」接近零，這反映了什麼現象？",
+                        options: [
+                            "金錢能 100% 自動轉化為個人的心理健康與生理健康",
+                            "物質財富與個人整體生命滿意度（Well-being）並不完全劃等號",
+                            "遊戲系統發生計算錯誤",
+                            "只要資產夠多，健康度會自動恢復滿格"
+                        ],
+                        answer: 1,
+                        explanation: "【解析】金錢是達成人生自由與安全的「工具」而非「終點」。邊際效用遞減規律顯示，當財富過度積累卻犧牲了健康、家庭與精神寄託時，無法帶來等比例的幸福感。"
+                    },
+                    {
+                        id: 23,
+                        type: "mcq",
+                        question: "「雙薪無子（DINK, Dual Income No Kids）」家庭結構在財務上的顯著特徵通常是：",
+                        options: [
+                            "可支配現金流較高，儲蓄與投資彈性較大",
+                            "必定無法進行任何股票投資",
+                            "每月固定開支高於養育三個小孩的家庭",
+                            "無法購買任何人壽保險"
+                        ],
+                        answer: 0,
+                        explanation: "【解析】DINK 族群擁有雙份職涯收入，同時免去了撫養子女的巨大長期現金流壓力，因此擁有相對充沛的可支配所得，能更自由地進行投資與生活體驗。"
+                    },
+                    {
+                        id: 24,
+                        type: "mcq",
+                        question: "當角色遭遇失業、重病或經濟衰退等重大衝擊時，下列何者能提供最重要的緩衝保護？",
+                        options: [
+                            "健全的社會安全網（如健康保險、失業救濟）與家庭支持系統",
+                            "購買大量的投機型股票",
+                            "增加信用卡的借款額度",
+                            "頻繁更換社交平台帳號"
+                        ],
+                        answer: 0,
+                        explanation: "【解析】社會安全網（全民健保、勞保失業給付）與堅實的親友社會資本，能在個人陷入人生低谷時提供基本的經濟與情感支撐，防止個人陷入極端貧困。"
+                    },
+                    {
+                        id: 25,
+                        type: "mcq",
+                        question: "評估一個角色的人生是否「成功」時，同時參考「客觀資產總額」與「主觀幸福度」的意義在於：",
+                        options: [
+                            "證明經濟學模型完全沒有用處",
+                            "建立超越單一物質指標的全人發展（Holistic Development）評估觀點",
+                            "讓遊戲無法計算最終得分",
+                            "強制所有玩家選擇相同的職業路線"
+                        ],
+                        answer: 1,
+                        explanation: "【解析】真正的成功是多元的。「全人發展」觀點提醒我們除了關注GDP或財富等硬指標外，更應關照個人身心健康、心理賦能、社會關係與自我實現。"
+                    },
+                    {
+                        id: 30,
+                        type: "sa",
+                        question: "【簡答題 5】在模擬人生結束時，你認為什麼樣的結局才是理想的「成功人生」？你會如何平衡「追求財務自由」與「身心健康及家庭關係」？",
+                        explanation: "【參考面向】開放式深思題。可討論財富為工具、身心為根本。成功的定義包含財務自給自足、健康的身體、親密的人際連結以及對社會的自我實現價值。"
+                    }
+                ]
+            }
+        ];
+
+        let userAnswers = {};
+        let isSubmitted = false;
+
+        // 頁面加載完成後初始化
+        window.onload = function() {
+            renderQuiz();
+            bindEvents();
+        };
+
+        // 渲染測驗題目
+        function renderQuiz() {
+            const container = document.getElementById("questions-container");
+            let html = "";
+
+            quizData.forEach((sec, sIdx) => {
+                html += `
+                <section id="${sec.sectionId}" class="scroll-mt-20">
+                    <div class="bg-gradient-to-r from-slate-800 to-slate-700 text-white rounded-2xl p-5 mb-5 shadow-md">
+                        <h2 class="text-lg sm:text-xl font-bold flex items-center">
+                            <span class="w-8 h-8 bg-brand-500 text-white rounded-lg flex items-center justify-center text-sm mr-3 font-black">${sIdx + 1}</span>
+                            ${sec.sectionTitle}
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-300 mt-1 pl-11">${sec.sectionDesc}</p>
+                    </div>
+                    <div class="space-y-6">
+                `;
+
+                sec.items.forEach(item => {
+                    if (item.type === 'mcq') {
+                        html += `
+                        <div id="q-card-${item.id}" class="card-box bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200 transition">
+                            <div class="flex items-start justify-between mb-4">
+                                <span class="text-xs font-bold text-brand-600 bg-brand-50 px-3 py-1 rounded-full border border-brand-100">
+                                    第 ${item.id} 題 · 單選題 (4分)
+                                </span>
+                                <span id="status-tag-${item.id}" class="hidden text-xs font-bold px-2.5 py-0.5 rounded-full"></span>
+                            </div>
+                            <h3 class="text-base sm:text-lg font-semibold text-slate-800 mb-4 leading-relaxed">
+                                ${item.question}
+                            </h3>
+                            <div class="space-y-2.5">
+                        `;
+
+                        item.options.forEach((opt, oIdx) => {
+                            const optChar = String.fromCharCode(65 + oIdx);
+                            html += `
+                            <label id="opt-label-${item.id}-${oIdx}" class="flex items-center p-3 sm:p-4 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition active:scale-[0.99] touch-manipulation">
+                                <input type="radio" name="q-${item.id}" value="${oIdx}" onchange="selectMCQ(${item.id}, ${oIdx})" class="w-5 h-5 text-brand-600 focus:ring-brand-500 border-slate-300">
+                                <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 font-bold text-xs flex items-center justify-center mr-3 ml-2 flex-shrink-0">
+                                    ${optChar}
+                                </span>
+                                <span class="text-sm sm:text-base text-slate-700 font-medium">${opt}</span>
+                            </label>
+                            `;
+                        });
+
+                        html += `
+                            </div>
+                            <!-- 答題解析區 (提交後展開) -->
+                            <div id="exp-${item.id}" class="explanation-box hidden mt-5 pt-4 border-t border-slate-100 bg-amber-50/60 rounded-xl p-4 border border-amber-200/60">
+                                <div class="flex items-center text-amber-800 font-bold text-sm mb-1.5">
+                                    <i class="fa-solid fa-lightbulb text-amber-500 mr-2"></i> 題目解析與教學延伸
+                                </div>
+                                <p class="text-xs sm:text-sm text-slate-700 leading-relaxed">${item.explanation}</p>
+                            </div>
+                        </div>
+                        `;
+                    } else if (item.type === 'sa') {
+                        html += `
+                        <div id="q-card-${item.id}" class="card-box bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200 transition">
+                            <div class="flex items-start justify-between mb-4">
+                                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
+                                    第 ${item.id} 題 · 開放簡答題
+                                </span>
+                            </div>
+                            <h3 class="text-base sm:text-lg font-semibold text-slate-800 mb-4 leading-relaxed">
+                                ${item.question}
+                            </h3>
+                            <textarea id="sa-input-${item.id}" oninput="updateProgress()" rows="4" placeholder="請在此輸入您的思考與分析..." class="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base outline-none transition resize-y"></textarea>
+                            
+                            <!-- 簡答題解析/參考面向 (提交後展開) -->
+                            <div id="exp-${item.id}" class="explanation-box hidden mt-4 pt-4 border-t border-slate-100 bg-indigo-50/60 rounded-xl p-4 border border-indigo-200/60">
+                                <div class="flex items-center text-indigo-800 font-bold text-sm mb-1.5">
+                                    <i class="fa-solid fa-compass text-indigo-500 mr-2"></i> 引導思考與參考答案面向
+                                </div>
+                                <p class="text-xs sm:text-sm text-slate-700 leading-relaxed">${item.explanation}</p>
+                            </div>
+                        </div>
+                        `;
+                    }
+                });
+
+                html += `</div></section>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // 選擇選擇題
+        function selectMCQ(qId, optionIdx) {
+            if (isSubmitted) return;
+            userAnswers[qId] = optionIdx;
+            
+            // 更新 UI 選中樣式
+            const options = document.querySelectorAll(`input[name="q-${qId}"]`);
+            options.forEach((opt, idx) => {
+                const label = document.getElementById(`opt-label-${qId}-${idx}`);
+                if (idx === optionIdx) {
+                    label.classList.add("border-brand-500", "bg-brand-50/60", "ring-2", "ring-brand-500/20");
+                    label.classList.remove("border-slate-200");
+                } else {
+                    label.classList.remove("border-brand-500", "bg-brand-50/60", "ring-2", "ring-brand-500/20");
+                    label.classList.add("border-slate-200");
+                }
+            });
+
+            updateProgress();
+        }
+
+        // 更新進度條
+        function updateProgress() {
+            let answeredCount = 0;
+            
+            // 計算 25 題選擇題
+            for (let i = 1; i <= 25; i++) {
+                if (userAnswers[i] !== undefined) answeredCount++;
+            }
+            
+            // 計算 5 題簡答題
+            for (let i = 26; i <= 30; i++) {
+                const input = document.getElementById(`sa-input-${i}`);
+                if (input && input.value.trim().length > 0) answeredCount++;
+            }
+
+            document.getElementById("progress-text").innerText = answeredCount;
+            const percentage = (answeredCount / 30) * 100;
+            document.getElementById("progress-bar").style.width = `${percentage}%`;
+        }
+
+        // 提交測驗
+        function submitQuiz() {
+            if (isSubmitted) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+
+            // 檢查是否全部完成
+            let unanswered = [];
+            for (let i = 1; i <= 25; i++) {
+                if (userAnswers[i] === undefined) unanswered.push(i);
+            }
+
+            if (unanswered.length > 0) {
+                showModal("尚未完成所有選擇題", `您還有 ${unanswered.length} 題選擇題未作答（例如：第 ${unanswered.slice(0, 3).join(", ")} 題）。建議填寫完整以獲得準確成績。`, "仍要提交", () => processSubmission());
+                return;
+            }
+
+            processSubmission();
+        }
+
+        // 處理提交邏輯
+        function processSubmission() {
+            closeModal();
+            isSubmitted = true;
+
+            let score = 0;
+            let correctCount = 0;
+
+            // 計分與顯示對錯樣式
+            quizData.forEach(sec => {
+                sec.items.forEach(item => {
+                    if (item.type === 'mcq') {
+                        const userAns = userAnswers[item.id];
+                        const isCorrect = userAns === item.answer;
+                        const statusTag = document.getElementById(`status-tag-${item.id}`);
+                        
+                        statusTag.classList.remove("hidden");
+                        
+                        if (isCorrect) {
+                            score += 4;
+                            correctCount++;
+                            statusTag.classList.add("bg-emerald-100", "text-emerald-700");
+                            statusTag.innerHTML = `<i class="fa-solid fa-check mr-1"></i>答對 (4分)`;
+                        } else {
+                            statusTag.classList.add("bg-rose-100", "text-rose-700");
+                            statusTag.innerHTML = `<i class="fa-solid fa-xmark mr-1"></i>答錯 (0分)`;
+                        }
+
+                        // 標示選項顏色
+                        item.options.forEach((_, oIdx) => {
+                            const label = document.getElementById(`opt-label-${item.id}-${oIdx}`);
+                            const input = label.querySelector("input");
+                            input.disabled = true;
+
+                            if (oIdx === item.answer) {
+                                // 正確答案顯示綠色
+                                label.classList.add("bg-emerald-50", "border-emerald-500", "text-emerald-900", "font-semibold");
+                                label.classList.remove("border-slate-200");
+                            } else if (oIdx === userAns && !isCorrect) {
+                                // 學生選錯的顯示紅色
+                                label.classList.add("bg-rose-50", "border-rose-400", "text-rose-900");
+                                label.classList.remove("border-slate-200");
+                            }
+                        });
+                    } else if (item.type === 'sa') {
+                        const textarea = document.getElementById(`sa-input-${item.id}`);
+                        if (textarea) textarea.readOnly = true;
+                    }
+
+                    // 展開解析
+                    const expBox = document.getElementById(`exp-${item.id}`);
+                    if (expBox) expBox.classList.remove("hidden");
+                });
+            });
+
+            // 填寫結果卡片資訊
+            const className = document.getElementById("student-class").value || "未填寫班級";
+            const studentNo = document.getElementById("student-no").value || "";
+            const studentName = document.getElementById("student-name").value || "同學";
+
+            document.getElementById("result-student-info").innerText = `${className} ${studentNo}號 ${studentName}`;
+            document.getElementById("final-score").innerText = score;
+            document.getElementById("correct-count").innerText = correctCount;
+
+            // 評語判定
+            let evalText = "";
+            if (score >= 90) evalText = "🌟 太棒了！您對全球地理、財經決策與人生理財概念有極其出色的理解！";
+            else if (score >= 75) evalText = "👍 表現優良！您已掌握大部分核心概念，可細讀解析深化觀念。";
+            else if (score >= 60) evalText = "📚 順利及格！建議對照答案解析，加強資產配置與機會成本的理解。";
+            else evalText = "💪 仍需努力！請認真研讀下方詳細解析，汲取寶貴的人生成敗經驗。";
+
+            document.getElementById("result-grade-eval").innerText = evalText;
+
+            // 顯示結果卡片
+            const resultCard = document.getElementById("result-card");
+            resultCard.classList.remove("hidden");
+
+            // 修改提交按鈕狀態
+            const submitBtn = document.getElementById("submit-btn");
+            submitBtn.innerHTML = `<i class="fa-solid fa-check-double mr-2"></i> 已完成測驗 (捲至頂部查看成績)`;
+            submitBtn.classList.remove("from-brand-600", "to-indigo-600");
+            submitBtn.classList.add("from-slate-600", "to-slate-700");
+
+            // 滾動回頂部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 綁定鍵盤/事件
+        function bindEvents() {
+            // 自動偵測輸入更新個人資訊
+        }
+
+        // Modal 彈窗控制
+        function showModal(title, desc, confirmText, onConfirm) {
+            document.getElementById("modal-title").innerText = title;
+            document.getElementById("modal-desc").innerText = desc;
+            const confirmBtn = document.getElementById("modal-confirm-btn");
+            confirmBtn.innerText = confirmText;
+            confirmBtn.onclick = onConfirm;
+            document.getElementById("custom-modal").classList.remove("hidden");
+        }
+
+        function closeModal() {
+            document.getElementById("custom-modal").classList.add("hidden");
+        }
+
+        // 重置測驗
+        function confirmReset() {
+            showModal("確定要重新作答？", "這將清除現有的選項與成績，讓您重新進行一次測驗。", "重新作答", () => {
+                location.reload();
+            });
+        }
+    </script>
+</body>
+</html>
