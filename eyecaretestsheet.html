@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>眼睛好健康．視力亮晶晶 — 情境式護眼學習單 (即時批改版)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background-color: #f4f9f4;
+      color: #2c3e50;
+    }
+    
+    /* 答題正確與錯誤的即時動態卡片樣式 */
+    .card-correct {
+      border-left: 6px solid #2e7d32 !important;
+      background-color: #f1f8e9 !important;
+    }
+    .card-incorrect {
+      border-left: 6px solid #e53935 !important;
+      background-color: #ffebee !important;
+    }
+    
+    /* 選項批改反饋樣式 */
+    .option-correct {
+      background-color: #c8e6c9 !important;
+      border-color: #2e7d32 !important;
+      font-weight: bold;
+      color: #1b5e20 !important;
+    }
+    .option-wrong {
+      background-color: #ffcdd2 !important;
+      border-color: #e53935 !important;
+      color: #b71c1c !important;
+    }
+
+    /* 列印專用排版優化 */
+    @media print {
+      body {
+        background-color: #ffffff;
+        padding: 0;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-border {
+        border: 1px solid #ccc !important;
+        box-shadow: none !important;
+      }
+      .online-form-box::after {
+        content: " (線上表單網址：https://forms.gle/wQLHErcdzUxoEdfu5)";
+        font-weight: bold;
+        color: #00695c;
+      }
+    }
+  </style>
+</head>
+<body class="py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
+
+  <!-- 主容器 -->
+  <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-6 sm:p-10 border border-green-100 print-border">
+    
+    <!-- 標題頭部 -->
+    <header class="text-center border-b-4 border-green-700 pb-6 mb-8">
+      <div class="inline-flex items-center justify-center p-3 bg-green-100 text-green-800 rounded-full mb-3">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-bold text-green-900 tracking-wide">眼睛好健康．視力亮晶晶</h1>
+      <p class="text-green-700 text-lg font-medium mt-1">情境式護眼學習單 (即時批改版)</p>
+      <p class="text-xs sm:text-sm text-gray-500 mt-2">全題型情境單選題（共 20 題，每題 5 分，滿分 100 分）</p>
+    </header>
+
+    <!-- 學生資訊區 -->
+    <section class="bg-green-50 rounded-xl p-4 sm:p-6 mb-8 border border-green-200 grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div>
+        <label class="block text-xs font-bold text-green-800 uppercase mb-1">班級</label>
+        <input type="text" id="input-class" placeholder="請輸入班級" class="w-full bg-white border border-green-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-green-800 uppercase mb-1">座號</label>
+        <input type="text" id="input-seat" placeholder="請輸入座號" class="w-full bg-white border border-green-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-green-800 uppercase mb-1">姓名</label>
+        <input type="text" id="input-name" placeholder="請輸入姓名" class="w-full bg-white border border-green-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-green-800 uppercase mb-1">得分</label>
+        <input type="text" id="input-score" readonly placeholder="批改後顯示" class="w-full bg-green-100 border border-green-400 font-bold text-green-900 rounded-lg px-3 py-2 text-sm text-center">
+      </div>
+    </section>
+
+    <!-- 即時分數成績統計橫幅 (預設隱藏) -->
+    <div id="score-banner" class="hidden bg-gradient-to-r from-green-700 to-emerald-800 text-white p-6 rounded-xl text-center mb-8 shadow-lg transform transition-all duration-300">
+      <h2 class="text-xl font-medium">測驗批改完成！您的總得分為：</h2>
+      <div class="text-4xl sm:text-5xl font-extrabold my-2 text-yellow-300" id="banner-score-text">0 <span class="text-2xl font-normal text-white">分</span></div>
+      <p id="banner-feedback" class="text-sm sm:text-base font-light text-green-100 mt-2"></p>
+    </div>
+
+    <!-- 學習單測驗表單 -->
+    <form id="quiz-form">
+      <div class="space-y-6">
+
+        <!-- Q1 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q1">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">1. 小明平時非常喜歡玩手機遊戲，到了週末更是連續坐在沙發上打好幾個小時都不休息。最近他開始覺得眼睛非常乾澀、發紅，甚至看東西有點模糊。如果小明想要遵循眼科醫師推薦的「3010護眼原則」來保護眼睛，他應該在遊玩過程中如何安排休息時間？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q1" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 每看螢幕 30 分鐘，就必須讓眼睛休息 10 分鐘</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q1" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 每看螢幕 30 小時，才可以休息 10 分鐘</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q1" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 每看螢幕 10 分鐘，就必須連續休息 30 分鐘</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q1" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 每看螢幕 30 分鐘，只要閉上眼睛 10 秒鐘即可</label>
+          </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q2">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">2. 小華在上國中後作業變多了，每天晚上都要在書桌前寫字、讀書好幾個小時。媽媽發現小華常常越寫頭越低，眼睛幾乎要貼到課本上面了。為了保護小華的視力並預防近視加深，媽媽提醒他寫作業時眼睛與書本之間應該保持多少距離才是最合適的？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q2" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 10 至 15 公分左右</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q2" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 20 至 25 公分左右</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q2" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 35 至 40 公分左右</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q2" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 60 至 70 公分左右</label>
+          </div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q3">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">3. 小強平時最喜歡在放學後關在房間裡玩電腦遊戲，很少參加戶外活動。在最近一次的學校視力檢查中，醫生警告他已經有輕微近視的徵兆。醫生建議他每天最好能多進行戶外活動，因為自然陽光可以刺激眼球分泌多巴胺以抑制眼軸拉長。請問小強每天至少應累積多久的戶外活動時間？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q3" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 15 分鐘</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q3" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 30 分鐘</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q3" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 至少 1 至 2 小時（建議每天滿 2 小時）</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q3" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 至少 5 小時以上</label>
+          </div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q4">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">4. 小美是個追劇達人，常常在睡前把房間的所有電燈全部關掉，獨自躺在被窩裡用智慧型手機看劇。幾個月下來，她發現眼睛非常容易疲勞、乾澀，甚至經常出現偏頭痛的症狀。請問在暗室中長時間盯著高亮度的電子螢幕，對眼睛最主要的傷害原因是什麼？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q4" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 黑暗中瞳孔會放大，導致過多螢幕強光與高能量藍光進入眼球造成傷害</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q4" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 黑暗中手機的螢幕電磁波會自動增加十倍</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q4" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 躺著看手機會導致眼睛內部的血液完全停止流動</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q4" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 黑暗中看手機會直接導致眼球體積迅速縮小</label>
+          </div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q5">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">5. 剛上國小三年級的小安最近發現看黑板上的字變得有些模糊，但他因為害怕被媽媽罵，所以不敢說出來，反而在看黑板時常常習慣性地瞇起眼睛、歪著頭看。請問小安這種瞇眼看東西的習慣，長期下來會對眼睛造成什麼影響？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q5" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 可以幫助眼球恢復原本健康的正常形狀</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q5" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 會促使眼部肌肉長期異常緊張，甚至加速近視度數加深</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q5" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 能有效提升遠視力，不需要再去眼科檢查</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q5" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 會讓虹膜的顏色發生改變</label>
+          </div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q6">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">6. 小傑每天搭乘公車上下學，車程大約要 40 分鐘。為了不浪費時間，他習慣在行駛中晃動頻繁的公車上拿手機出來看電子書或刷社群軟體。最近他總是覺得頭暈眼花、眼睛酸痛。請問在晃動的交通工具上看手機為什麼對眼睛損害很大？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q6" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 車廂內的氣壓變高會直接壓迫眼球</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q6" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 眼睛需要不斷頻繁調節焦距以適應晃動，導致睫狀肌過度疲勞</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q6" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 公車上的藍光強度比平時在室內強十倍</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q6" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 移動中的手機螢幕會自動發出對眼睛有害的微波</label>
+          </div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q7">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">7. 媽媽最近買了新檯燈給小玲寫作業使用，小玲是用右手寫字的右撇子。在安裝檯燈時，媽媽詢問小玲應該把檯燈放在書桌的哪一個位置，當光線照射下來時才最不會因為手的陰影遮擋而影響視線？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q7" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 放置在右手邊的正上方</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q7" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 放置在左前方（非慣用手側）</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q7" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 直接正對著眼睛往前照射</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q7" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 放置在正後方照向書本</label>
+          </div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q8">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">8. 爺爺最近覺得看東西總是有些模糊，到了晚上或暗處更是看不清楚路面，家人帶他去檢查後發現與缺乏某種維持視網膜感光功能的維生素有關。營養師建議爺爺可以多吃胡蘿蔔、木瓜、深綠色蔬菜等食物。請問爺爺最需要補充的是哪一種營養素？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q8" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 維生素 A（或 β-胡蘿蔔素）</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q8" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 維生素 B12</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q8" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 維生素 C</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q8" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 維生素 D</label>
+          </div>
+        </div>
+
+        <!-- Q9 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q9">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">9. 小莉在準備期末考時長時間讀書，眼睛感到相當乾澀酸痛。媽媽建議她可以用溫熱的毛巾幫眼睛進行熱敷，以促進眼周血液循環並緩解肌肉緊繃。請問小莉在進行眼部熱敷時，下列哪一個操作方式才是安全且正確的？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q9" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 使用剛燒開的 100°C 熱水浸泡毛巾後直接敷在眼皮上</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q9" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 選擇約 40°C 左右的溫熱毛巾，每次熱敷約 10 至 15 分鐘</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q9" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 將毛巾放入冷凍庫冰凍後再拿來熱敷</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q9" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 一次連續熱敷 3 個小時不間斷，效果最好</label>
+          </div>
+        </div>
+
+        <!-- Q10 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q10">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">10. 剛考完試的小林決定好好放鬆，他整天都在家裡看電視。為了保護視力，媽媽特別提醒他要與電視螢幕保持適當的距離。假設小林家裡的電視螢幕對角線長度是 100 公分，請問他坐在沙發上看電視時，距離螢幕至少應該保持多遠？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q10" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 50 公分以內</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q10" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 100 公分左右</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q10" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 約 250 至 300 公分（螢幕對角線的 2.5 至 3 倍）</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q10" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 必須距離 10 公尺以上</label>
+          </div>
+        </div>
+
+        <!-- Q11 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q11">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">11. 體育課打籃球時，小明不小心被飛來的籃球砸中面部，隨後覺得眼睛痛、裡面好像有沙子異物感，忍不住想要伸手用力去揉眼睛。旁邊的體育老師立刻阻止了他。請問當眼睛有異物感或不適時，為什麼不能用力搓揉眼睛？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q11" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 用力搓揉可能會讓異物刮傷角膜，甚至將手上的細菌帶入造成感官感染</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q11" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 用力搓揉會讓眼珠子直接從眼眶裡面掉出來</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q11" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 揉眼睛會讓近視度數在一秒鐘內增加 500 度</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q11" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 揉眼睛會使眼睛的淚腺永久失去功能</label>
+          </div>
+        </div>
+
+        <!-- Q12 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q12">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">12. 小珍在學校的例行視力檢查中發現近視度數增加了 50 度。媽媽帶她去眼科診所，醫生開立了低濃度的長效型散瞳劑（阿托品 Atropine）給小珍點。請問點長效散瞳劑的主要作用機制與注意事項是什麼？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q12" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 散瞳劑可以徹底根治近視，點完後以後再也不會近視</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q12" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 散瞳劑能放鬆睫狀肌以延緩近視加深，但可能會出現畏光現象，外出需防曬</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q12" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 散瞳劑只要在覺得眼睛痠的時候點一次即可，不需要定期複診</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q12" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 點散瞳劑可以讓眼睛在暗處發光，提高夜視能力</label>
+          </div>
+        </div>
+
+        <!-- Q13 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q13">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">13. 現代人長時間盯著電腦與手機螢幕，常常因為過度專注而忘記眨眼，導致眼球表面的淚膜破裂乾澀，引起乾眼症不適。請問在正常使用電腦或閱讀的情況下，我們應該如何保持眼睛自然的濕潤與健康？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q13" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 養成每分鐘自然且完整眨眼 15 至 20 次的習慣</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q13" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 堅持連續 10 分鐘完全不眨眼來鍛鍊眼肌</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q13" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 每天用大量的自來水直接沖洗眼球內部</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q13" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 戴著一般洗澡用的蛙鏡看螢幕即可</label>
+          </div>
+        </div>
+
+        <!-- Q14 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q14">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">14. 媽媽帶小宇去逛超市，希望購買對眼睛黃斑部有保護作用的食材。營養師推薦可以多吃富含「葉黃素」與「玉米黃素」的食物，這類營養素能幫忙過濾高能量藍光。請問下列哪一組食材組合含有最豐富的葉黃素？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q14" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 菠菜、地瓜葉、羽衣甘藍等深綠色蔬菜</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q14" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 白飯、白吐司與洋洋餅乾</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q14" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 炸雞排、薯條與珍珠奶茶</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q14" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 豬油、烤香腸與培根</label>
+          </div>
+        </div>
+
+        <!-- Q15 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q15">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">15. 12 歲的小強最近配戴了眼鏡，但他覺得只有在上課看黑板時戴就好，平時看書或走路都嫌麻煩把眼鏡拔掉。醫生提醒他，如果不按醫囑正確配戴度數合適的眼鏡，可能會造成什麼後果？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q15" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 眼睛需要經常過度調節焦距來適應清晰度，反而容易加速近視度數增加</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q15" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 近視度數會自動歸零並恢復正常</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q15" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 可以自動培養出雙眼各自看不同方向的神奇能力</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q15" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 能讓眼睛的角膜變硬而不受損傷</label>
+          </div>
+        </div>
+
+        <!-- Q16 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q16">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">16. 小紅參加了學校的視力保健社團，社長問大家：「為了確保眼睛健康，就算平時感覺視力很好、眼睛沒有任何不舒服，學齡兒童與青少年應該多久定期接受一次專業的眼科檢查？」請問正確答案是多久？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q16" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 每 5 年檢查一次即可</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q16" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 每半年（約 6 個月）至一年定期檢查一次</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q16" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 只要眼睛沒有痛就不需要檢查</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q16" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 每天都要去眼科診所報到檢查</label>
+          </div>
+        </div>
+
+        <!-- Q17 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q17">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">17. 小剛平時晚上喜歡躺在床上看漫畫，有時候是用側躺的方式看，有時候是仰躺著把書舉高看。一段時間後，他發現兩隻眼睛的視力差距越來越大，產生了「複視」與單眼視力快速減退的問題。請問躺著看書主要會造成什麼不良影響？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q17" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 兩眼與書本距離不一致且光線受阻，導致兩眼睫狀肌調節不均勻與視力失調</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q17" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 會讓書本上的文字字體自動變小</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q17" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 會導致身體的骨骼停止生長</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q17" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 會讓眼皮逐漸黏在一起無法睜開</label>
+          </div>
+        </div>
+
+        <!-- Q18 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q18">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">18. 暑假期間，小明每天都跟朋友約在戶外球場打籃球，烈日當空時陽光非常強烈。媽媽提醒他除了要補充水分外，長時間在強烈陽光下活動也需要注意眼睛的防曬。請問紫外線如果長時間直射眼睛，最容易引發下列哪種眼部疾病？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q18" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 白內障與水晶體/角膜受損</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q18" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 色盲與夜盲症</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q18" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 眼球形狀變成方形</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q18" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 耳朵聽力下降</label>
+          </div>
+        </div>
+
+        <!-- Q19 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q19">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">19. 國三的小美面臨會考壓力，每天晚上都在書桌前讀書到深夜 12 點，早上 6 點就要起床，每天睡眠時間不足 6 小時。最近她常感到眼皮跳動、雙眼乾澀難受。請問缺乏充足睡眠對眼睛健康會帶來什麼負面影響？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q19" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 眼睛的睫状肌與神經無法獲得足夠休息，導致眼壓升高與嚴重視覺疲勞</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q19" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 會讓眼睛虹膜的顏色變得越來越淺</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q19" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 能讓視網膜自動增厚，提高看書速度</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q19" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 睡眠不足完全不會對眼睛造成任何影響</label>
+          </div>
+        </div>
+
+        <!-- Q20 -->
+        <div class="p-5 rounded-xl bg-gray-50 border-l-4 border-green-600 shadow-sm transition-all duration-200" id="card-q20">
+          <p class="font-bold text-gray-800 text-base leading-relaxed mb-3">20. 學校正在舉辦「護眼小達人」競賽，要求同學們制定一個能落實在日常生活中的護眼計畫。請問下列哪一位同學提出的護眼行動方案是最科學且最具可行性的？</p>
+          <div class="space-y-2 text-sm sm:text-base">
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q20" value="A" class="w-4 h-4 text-green-600 mr-3"> (A) 小林：『我決定連續三天不睜開眼睛，讓眼睛得到徹底的休息。』</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q20" value="B" class="w-4 h-4 text-green-600 mr-3"> (B) 小張：『我會落實用眼 30 分鐘休息 10 分鐘，每天戶外活動 2 小時，並保持均衡飲食與充足睡眠。』</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q20" value="C" class="w-4 h-4 text-green-600 mr-3"> (C) 小陳：『我只要每天吃十錠葉黃素，就可以通宵打電玩不需要休息。』</label>
+            <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-green-50 cursor-pointer transition"><input type="radio" name="q20" value="D" class="w-4 h-4 text-green-600 mr-3"> (D) 小李：『我看螢幕時只要把亮度開到最大，就不需要開啟室內電燈了。』</label>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 操作按鈕區 (不包含 alert) -->
+      <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-row gap-4 justify-center items-center no-print">
+        <button type="button" onclick="startGradingProcess()" class="w-full sm:w-auto px-8 py-3.5 bg-green-700 hover:bg-green-800 text-white font-bold text-base rounded-xl shadow-lg transition duration-200 flex items-center justify-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          提交並即時批改分數
+        </button>
+        <button type="button" onclick="promptResetQuiz()" class="w-full sm:w-auto px-6 py-3.5 bg-gray-500 hover:bg-gray-600 text-white font-medium text-base rounded-xl shadow transition duration-200 flex items-center justify-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          重置答題
+        </button>
+      </div>
+    </form>
+
+    <!-- 底部 Google 表單連結專區 -->
+    <section class="mt-12 bg-teal-50 border-2 border-dashed border-teal-600 rounded-2xl p-6 text-center shadow-sm online-form-box">
+      <div class="inline-flex items-center justify-center p-2.5 bg-teal-100 text-teal-800 rounded-full mb-2">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+      </div>
+      <h3 class="text-xl font-bold text-teal-900">線上作業繳交 / 意見回饋專區</h3>
+      <p class="text-teal-700 text-sm mt-1 max-w-xl mx-auto">若老師或學校需要您填寫線上學習問卷或進行作業系統存檔，請點擊下方按鈕前往 Google 表單完成填答：</p>
+      <div class="mt-4">
+        <a href="https://forms.gle/wQLHErcdzUxoEdfu5" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-8 py-3 bg-teal-700 hover:bg-teal-800 text-white font-bold text-base rounded-full shadow-md transition duration-200">
+          前往 Google 表單線上填答
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- 自訂彈出對話框 Modal (替代原本的 alert/confirm) -->
+  <div id="custom-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl transform transition-all">
+      <h3 id="modal-title" class="text-xl font-bold text-gray-800 mb-2"></h3>
+      <p id="modal-message" class="text-gray-600 text-sm leading-relaxed mb-6"></p>
+      <div class="flex justify-end gap-3" id="modal-actions">
+        <button id="modal-cancel-btn" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 font-medium text-sm transition">取消</button>
+        <button id="modal-confirm-btn" class="px-5 py-2 rounded-lg bg-green-700 hover:bg-green-800 text-white font-bold text-sm shadow transition">確定</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 正確答案對照表 (20 題)
+    const answerKey = {
+      q1: 'A', q2: 'C', q3: 'C', q4: 'A', q5: 'B',
+      q6: 'B', q7: 'B', q8: 'A', q9: 'B', q10: 'C',
+      q11: 'A', q12: 'B', q13: 'A', q14: 'A', q15: 'A',
+      q16: 'B', q17: 'A', q18: 'A', q19: 'A', q20: 'B'
+    };
+
+    // 自訂 Modal 彈窗控制邏輯
+    function showModal(title, message, isConfirm = false, onConfirm = null) {
+      const modal = document.getElementById('custom-modal');
+      const titleEl = document.getElementById('modal-title');
+      const msgEl = document.getElementById('modal-message');
+      const cancelBtn = document.getElementById('modal-cancel-btn');
+      const confirmBtn = document.getElementById('modal-confirm-btn');
+
+      titleEl.textContent = title;
+      msgEl.textContent = message;
+
+      if (isConfirm) {
+        cancelBtn.classList.remove('hidden');
+      } else {
+        cancelBtn.classList.add('hidden');
+      }
+
+      confirmBtn.onclick = () => {
+        modal.classList.add('hidden');
+        if (onConfirm) onConfirm();
+      };
+
+      cancelBtn.onclick = () => {
+        modal.classList.add('hidden');
+      };
+
+      modal.classList.remove('hidden');
+    }
+
+    // 啟動批改流程
+    function startGradingProcess() {
+      let unansweredCount = 0;
+      for (let i = 1; i <= 20; i++) {
+        if (!document.querySelector(`input[name="q${i}"]:checked`)) {
+          unansweredCount++;
+        }
+      }
+
+      if (unansweredCount > 0) {
+        showModal(
+          '作答尚未完成',
+          `您還有 ${unansweredCount} 道題目未選擇答案！建議完成所有題目以獲得準確成績。請問是否仍要直接提交批改？`,
+          true,
+          executeGrading
+        );
+      } else {
+        executeGrading();
+      }
+    }
+
+    // 執行實際計分與 UI 反饋更新
+    function executeGrading() {
+      let score = 0;
+      const totalQuestions = 20;
+      const pointsPerQ = 5;
+
+      // 清理先前的批改標記
+      for (let i = 1; i <= totalQuestions; i++) {
+        const card = document.getElementById(`card-q${i}`);
+        card.classList.remove('card-correct', 'card-incorrect');
+
+        const labels = card.querySelectorAll('label');
+        labels.forEach(l => l.classList.remove('option-correct', 'option-wrong'));
+      }
+
+      // 開始逐題比對
+      for (let i = 1; i <= totalQuestions; i++) {
+        const qName = `q${i}`;
+        const correctVal = answerKey[qName];
+        const selectedRadio = document.querySelector(`input[name="${qName}"]:checked`);
+        const card = document.getElementById(`card-${qName}`);
+
+        // 標示出標準答案（綠色）
+        const correctRadio = document.querySelector(`input[name="${qName}"][value="${correctVal}"]`);
+        if (correctRadio) {
+          correctRadio.parentElement.classList.add('option-correct');
+        }
+
+        if (selectedRadio) {
+          if (selectedRadio.value === correctVal) {
+            score += pointsPerQ;
+            card.classList.add('card-correct');
+          } else {
+            selectedRadio.parentElement.classList.add('option-wrong');
+            card.classList.add('card-incorrect');
+          }
+        } else {
+          card.classList.add('card-incorrect');
+        }
+      }
+
+      // 更新學生資訊欄位中的得分
+      document.getElementById('input-score').value = `${score} 分`;
+
+      // 顯示上方分數 Banner 與專屬評語
+      const scoreBanner = document.getElementById('score-banner');
+      const scoreText = document.getElementById('banner-score-text');
+      const feedbackText = document.getElementById('banner-feedback');
+
+      scoreText.innerHTML = `${score} <span class="text-2xl font-normal text-white">分</span>`;
+      
+      if (score === 100) {
+        feedbackText.textContent = '🎉 完美滿分！太厲害了，你是名副其實的護眼小達人！請繼續保持極佳的眼睛保健習慣！';
+      } else if (score >= 80) {
+        feedbackText.textContent = '🌟 表現極佳！代表你已經具備大部分正確的眼部健康知識，請細心複習答錯的題目喔！';
+      } else if (score >= 60) {
+        feedbackText.textContent = '👍 恭喜及格！建議查看標示紅色的錯題，並將正確的護眼習慣落實在日常生活中！';
+      } else {
+        feedbackText.textContent = '💪 還需要再加油喔！請對照綠色標示的正確答案仔細閱讀，養成良好的用眼觀念！';
+      }
+
+      scoreBanner.classList.remove('hidden');
+      scoreBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // 重置答題確認
+    function promptResetQuiz() {
+      showModal(
+        '確認重置測驗',
+        '您確定要清空所有已勾選的答案與評分結果嗎？清空後可重新進行測驗。',
+        true,
+        () => {
+          document.getElementById('quiz-form').reset();
+          document.getElementById('input-score').value = '';
+          document.getElementById('score-banner').classList.add('hidden');
+
+          for (let i = 1; i <= 20; i++) {
+            const card = document.getElementById(`card-q${i}`);
+            card.classList.remove('card-correct', 'card-incorrect');
+
+            const labels = card.querySelectorAll('label');
+            labels.forEach(l => l.classList.remove('option-correct', 'option-wrong'));
+          }
+
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      );
+    }
+  </script>
+
+</body>
+</html>
