@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>國中健康與體育 - 互動練習題庫</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React & ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- Babel CDN for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background-color: #f8fafc;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+  <div id="root" class="flex-grow flex flex-col"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    // --- SVG 示意圖元件 ---
+    
+    // Q4 眼睛近視成像示意圖
+    const EyeImagingQ4 = () => (
+      <div className="my-4 p-4 bg-slate-900 text-white rounded-xl shadow-md flex flex-col items-center">
+        <span className="text-xs text-slate-400 mb-2 font-mono">[ 題目圖示：阿翔眼睛成像圖 ]</span>
+        <svg viewBox="0 0 400 180" className="w-full max-w-md h-auto">
+          {/* 眼球外框 */}
+          <path d="M 60 90 C 60 30, 320 30, 320 90 C 320 150, 60 150, 60 90 Z" fill="none" stroke="#94a3b8" strokeWidth="3" />
+          {/* 角膜與晶狀體 */}
+          <path d="M 60 65 Q 40 90 60 115" fill="none" stroke="#38bdf8" strokeWidth="4" />
+          <ellipse cx="90" cy="90" rx="10" ry="30" fill="#38bdf8" opacity="0.6" stroke="#0284c7" strokeWidth="2" />
+          {/* 視網膜 */}
+          <path d="M 300 45 A 75 75 0 0 1 300 135" fill="none" stroke="#f43f5e" strokeWidth="5" />
+          <text x="310" y="95" fill="#f43f5e" fontSize="12" fontWeight="bold">視網膜</text>
+          
+          {/* 光線聚焦於視網膜前方 (近視) */}
+          <line x1="10" y1="65" x2="90" y2="75" stroke="#fde047" strokeWidth="2.5" strokeDasharray="4 2" />
+          <line x1="10" y1="115" x2="90" y2="105" stroke="#fde047" strokeWidth="2.5" strokeDasharray="4 2" />
+          
+          <line x1="90" y1="75" x2="230" y2="90" stroke="#fde047" strokeWidth="2.5" />
+          <line x1="90" y1="105" x2="230" y2="90" stroke="#fde047" strokeWidth="2.5" />
+          
+          {/* 焦線延伸 */}
+          <line x1="230" y1="90" x2="300" y2="75" stroke="#fde047" strokeWidth="1" strokeDasharray="2 2" opacity="0.5" />
+          <line x1="230" y1="90" x2="300" y2="105" stroke="#fde047" strokeWidth="1" strokeDasharray="2 2" opacity="0.5" />
+          
+          {/* 焦點 */}
+          <circle cx="230" cy="90" r="5" fill="#ef4444" />
+          <text x="215" y="115" fill="#ef4444" fontSize="12" fontWeight="bold">焦點在視網膜前</text>
+        </svg>
+      </div>
+    );
+
+    // Q14 近視選項圖示
+    const EyeOptionSVG = ({ type }) => {
+      const getDetails = () => {
+        switch(type) {
+          case 'A': // 近視 (焦距在前方)
+            return { focusX: 220, label: "(A) 聚焦於視網膜前 (近視)" };
+          case 'B': // 正常 (焦距在視網膜上)
+            return { focusX: 300, label: "(B) 聚焦於視網膜上 (正常)" };
+          case 'C': // 遠視 (焦距在後方)
+            return { focusX: 350, label: "(C) 聚焦於視網膜後 (遠視)" };
+          case 'D': // 散光
+            return { focusX: 220, label: "(D) 不規則焦距 (散光)" };
+          default:
+            return { focusX: 220, label: "" };
+        }
+      };
+
+      const info = getDetails();
+
+      return (
+        <div className="p-2 border border-slate-700 rounded-lg bg-slate-900 text-white text-center">
+          <div className="text-xs text-slate-300 font-bold mb-1">{info.label}</div>
+          <svg viewBox="0 0 380 140" className="w-full h-auto">
+            <path d="M 50 70 C 50 20, 300 20, 300 70 C 300 120, 50 120, 50 70 Z" fill="none" stroke="#64748b" strokeWidth="2" />
+            <ellipse cx="80" cy="70" rx="8" ry="25" fill="#38bdf8" opacity="0.7" />
+            <path d="M 285 32 A 60 60 0 0 1 285 108" fill="none" stroke="#f43f5e" strokeWidth="4" />
+            
+            <line x1="10" y1="50" x2="80" y2="60" stroke="#fde047" strokeWidth="2" />
+            <line x1="10" y1="90" x2="80" y2="80" stroke="#fde047" strokeWidth="2" />
+
+            <line x1="80" y1="60" x2={info.focusX} y2="70" stroke="#fde047" strokeWidth="2" />
+            <line x1="80" y1="80" x2={info.focusX} y2="70" stroke="#fde047" strokeWidth="2" />
+            
+            <circle cx={info.focusX} cy="70" r="4" fill="#ef4444" />
+          </svg>
+        </div>
+      );
+    };
+
+    // Q16 耳朵構造圖解
+    const EarStructureQ16 = () => (
+      <div className="my-4 p-4 bg-slate-900 text-white rounded-xl shadow-md flex flex-col items-center">
+        <span className="text-xs text-slate-400 mb-2 font-mono">[ 題目圖示：人體耳部構造簡圖 ]</span>
+        <svg viewBox="0 0 450 200" className="w-full max-w-lg h-auto">
+          {/* 外耳殼 E */}
+          <path d="M 30 40 Q 10 90 40 160 Q 70 170 60 120 Q 50 80 70 50 Z" fill="#fca5a5" stroke="#ef4444" strokeWidth="2" />
+          <text x="25" y="30" fill="#38bdf8" fontSize="14" fontWeight="bold">E (耳殼)</text>
+          
+          {/* 外耳道 F */}
+          <rect x="65" y="85" width="100" height="30" fill="#334155" stroke="#94a3b8" strokeWidth="2" />
+          <text x="100" y="75" fill="#38bdf8" fontSize="14" fontWeight="bold">F (外耳道)</text>
+          
+          {/* 鼓膜 G */}
+          <line x1="165" y1="80" x2="165" y2="120" stroke="#f59e0b" strokeWidth="5" />
+          <text x="155" y="140" fill="#38bdf8" fontSize="14" fontWeight="bold">G (鼓膜)</text>
+          
+          {/* 中耳聽小骨 */}
+          <path d="M 170 95 L 190 90 L 205 100" fill="none" stroke="#cbd5e1" strokeWidth="3" />
+          
+          {/* 耳蝸 H */}
+          <g transform="translate(240, 70)">
+            <path d="M 20 30 C 50 0, 70 40, 40 50 C 20 60, 30 30, 35 35" fill="none" stroke="#22c55e" strokeWidth="8" strokeLinecap="round" />
+            <text x="60" y="35" fill="#22c55e" fontSize="14" fontWeight="bold">H (耳蝸 - 內含聽覺感受器)</text>
+          </g>
+
+          {/* 標示線 */}
+          <line x1="210" y1="100" x2="245" y2="100" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
+        </svg>
+      </div>
+    );
+
+    // --- 題目完整資料庫 ---
+    const quizQuestions = [
+      {
+        id: 1,
+        question: "「運輸激素、養分、氧氣、廢物到全身細胞」上述是哪一個人體系統負責的功能？",
+        options: [
+          { label: "A", text: "神經系統" },
+          { label: "B", text: "循環系統" },
+          { label: "C", text: "內分泌系統" },
+          { label: "D", text: "呼吸系統" }
+        ],
+        answer: "B",
+        rationale: "循環系統（包含心臟、血管與血液）的主要功能為輸送氧氣、養分、激素至全身細胞，並帶走代謝廢物。",
+        hint: "該系統包含心臟與血液血管網絡。"
+      },
+      {
+        id: 2,
+        question: "人類最大的器官是？",
+        options: [
+          { label: "A", text: "皮膚" },
+          { label: "B", text: "心臟" },
+          { label: "C", text: "肝臟" },
+          { label: "D", text: "腎臟" }
+        ],
+        answer: "A",
+        rationale: "皮膚覆蓋整個體表，是人體面積最大且重量最重的器官（約占成人體重的16%）。",
+        hint: "覆蓋在人體最外層、保護身體免受外物入侵。"
+      },
+      {
+        id: 3,
+        question: "柚子跟花媽說他的牙齒旁邊的肉腫起來，且會疼痛，這是因為酸性物質侵蝕到牙齒的什麼構造，產生膿包？",
+        options: [
+          { label: "A", text: "琺瑯質" },
+          { label: "B", text: "象牙質" },
+          { label: "C", text: "牙齦" },
+          { label: "D", text: "牙髓腔" }
+        ],
+        answer: "D",
+        rationale: "牙髓腔內含有豐富的神經與血管，當齲齒深度侵蝕至牙髓腔時會引發劇烈疼痛、發炎與膿包（牙髓炎）。",
+        hint: "牙齒內部含有血管與神經的最內層腔室。"
+      },
+      {
+        id: 4,
+        question: "下圖是阿翔的眼睛成像圖。請問：阿翔應該如何矯正？",
+        hasCustomImage: "Q4",
+        options: [
+          { label: "A", text: "配戴凸透鏡" },
+          { label: "B", text: "不接受眼內手術，順其自然" },
+          { label: "C", text: "使用沒通過驗證的眼藥水" },
+          { label: "D", text: "配戴凹透鏡" }
+        ],
+        answer: "D",
+        rationale: "圖中顯示光線聚焦於視網膜前方，屬於「近視」。近視眼需要配戴能發散光線的「凹透鏡」來使成像後移至視網膜上。",
+        hint: "成像位在視網膜「前方」屬於近視，需使用可發散光線的透鏡。"
+      },
+      {
+        id: 5,
+        question: "根據世界衛生組織對健康的定義，你認為下列個案中誰最有資格稱為「健康的個體」？",
+        options: [
+          { label: "A", text: "阿水學歷高、職位高、薪水高，但 EQ 一點也不高" },
+          { label: "B", text: "阿蓮每日做環保、人緣好、身體好" },
+          { label: "C", text: "阿妹天天做 SPA，以永保年年 18 歲" },
+          { label: "D", text: "阿九每天吃得好、睡得飽、懶得動、不打掃" }
+        ],
+        answer: "B",
+        rationale: "世界衛生組織（WHO）定義健康為「生理、心理及社會適應三方面皆處於完好狀態」。阿蓮身體好（生理）、做環保與人緣好（心理與社會完好），最符健康定義。",
+        hint: "健康需同時兼顧生理、心理與社會適應良好。"
+      },
+      {
+        id: 6,
+        question: "每個人的膚質特性不同，加上生活習慣的影響，容易產生一些皮膚問題，請問青春痘好發於哪些部位？ (甲)上臂 (乙)頸部 (丙)背部 (丁)胸部 (戊)臉部 (己)肩部",
+        options: [
+          { label: "A", text: "甲乙丙丁戊己" },
+          { label: "B", text: "乙丙丁戊己" },
+          { label: "C", text: "甲丙丁戊己" },
+          { label: "D", text: "甲乙丙丁戊" }
+        ],
+        answer: "B",
+        rationale: "青春痘（痤瘡）好發於皮脂腺分布密度較高的部位，包括臉部、頸部、胸部、背部及肩部（乙丙丁戊己）。上臂皮脂腺較少。",
+        hint: "皮脂腺豐富的部位容易長痘痘，上臂皮脂腺密度較低。"
+      },
+      {
+        id: 7,
+        question: "奇奇耳朵有較多耳垢時，要如何處理？",
+        options: [
+          { label: "A", text: "用掏耳棒" },
+          { label: "B", text: "用棉花棒" },
+          { label: "C", text: "側身跳一跳，利用重力使之掉出" },
+          { label: "D", text: "請耳鼻喉科醫師取出" }
+        ],
+        answer: "D",
+        rationale: "自行使用掏耳棒或棉花棒易將耳垢推進耳道深處或推傷耳膜。若耳垢堆積過多影響聽力或引起不適，應由耳鼻喉科醫師專業處理。",
+        hint: "避免自行插入硬物清潔，應尋求專業醫師協助。"
+      },
+      {
+        id: 8,
+        question: "小志的爺爺近日發現因耳垢累積太多，造成聲音在耳朵內傳導效果變差影響聽力，請問耳垢易累積在耳朵的哪一個部位？",
+        options: [
+          { label: "A", text: "耳殼" },
+          { label: "B", text: "外耳道" },
+          { label: "C", text: "耳咽管" },
+          { label: "D", text: "鼓膜" }
+        ],
+        answer: "B",
+        rationale: "耳垢是由外耳道皮脂腺與聹腺分泌物混合皮屑形成，主要積聚於外耳道中。",
+        hint: "連接耳殼到鼓膜之間的管道通道。"
+      },
+      {
+        id: 9,
+        question: "牙齒遇到酸性物質會產生齲齒的現象，當酸性物質侵蝕到何處時還不會有感覺？",
+        options: [
+          { label: "A", text: "琺瑯質" },
+          { label: "B", text: "象牙質" },
+          { label: "C", text: "牙髓腔" },
+          { label: "D", text: "牙齦" }
+        ],
+        answer: "A",
+        rationale: "琺瑯質（牙釉質）為牙齒最外層硬組織，內部完全沒有神經分布，因此酸蝕僅限於琺瑯質時通常無酸痛感。",
+        hint: "牙齒最外層極為堅硬且缺乏神經分布的構造。"
+      },
+      {
+        id: 10,
+        question: "小城和小淵在討論規律運動的好處，以下哪個概念是錯誤的？",
+        options: [
+          { label: "A", text: "可以增強抵抗力，減少患病的機會" },
+          { label: "B", text: "可以增強心肺功能、促進血液循環" },
+          { label: "C", text: "減少身體的柔軟性，降低受傷的機會" },
+          { label: "D", text: "可以強壯骨骼，幫助生長" }
+        ],
+        answer: "C",
+        rationale: "規律運動與伸展會「增加」身體柔軟度與關節活動度，從而減少運動傷害發生，而非「減少」柔軟性。",
+        hint: "適度運動會提升而非降低肢體的彎曲伸展適能（柔軟度）。"
+      },
+      {
+        id: 11,
+        question: "小光很愛吃甜食又不刷牙，牙齒上有一顆蛀牙，在看牙醫時他詢問牙醫：齲齒是因為牙齒上的細菌與甜食混合，產生什麼物質，導致牙齒的鈣質溶解？",
+        options: [
+          { label: "A", text: "甜性物質" },
+          { label: "B", text: "辣性物質" },
+          { label: "C", text: "麻性物質" },
+          { label: "D", text: "酸性物質" }
+        ],
+        answer: "D",
+        rationale: "口腔細菌分解食物中的糖分會產生「酸性物質」，使牙齒表面的鈣質脫鈣溶解，造成齲齒（蛀牙）。",
+        hint: "細菌分解糖分會發酵產生腐蝕牙齒的成分。"
+      },
+      {
+        id: 12,
+        question: "豆子喜歡洗完澡就使用棉花棒挖耳朵，但是棉花棒過度使用會造成何種症狀或疾病？",
+        options: [
+          { label: "A", text: "中耳炎" },
+          { label: "B", text: "內耳炎" },
+          { label: "C", text: "外耳炎和耳垢堵塞" },
+          { label: "D", text: "中耳炎和耳垢堵塞" }
+        ],
+        answer: "C",
+        rationale: "頻繁使用棉花棒容易摩擦刮傷外耳道皮膚造成「外耳炎」，同時會把耳垢推入更深處形成「耳垢堵塞」。",
+        hint: "影響範圍主要集中在外耳道區域。"
+      },
+      {
+        id: 13,
+        question: "不喜歡運動可能會對健康造成何種影響？",
+        options: [
+          { label: "A", text: "易罹患代謝疾病" },
+          { label: "B", text: "新陳代謝上升" },
+          { label: "C", text: "體重下降" },
+          { label: "D", text: "肌耐力增加" }
+        ],
+        answer: "A",
+        rationale: "長期缺乏運動會降低基礎代謝率、導致體脂堆積與肌肉退化，大幅增加罹患糖尿病、高血壓等代謝症候群與心血管疾病風險。",
+        hint: "缺乏運動容易導致熱量囤積與三高疾病。"
+      },
+      {
+        id: 14,
+        question: "請問哪張圖片是近視？",
+        hasCustomImage: "Q14",
+        options: [
+          { label: "A", text: "成像落在視網膜前方" },
+          { label: "B", text: "成像正好落在視網膜上" },
+          { label: "C", text: "成像落在視網膜後方" },
+          { label: "D", text: "成像焦點不規則散開" }
+        ],
+        answer: "A",
+        rationale: "近視（Myopia）的特徵是眼軸過長或屈光度過大，使進入眼球的平行光線聚焦於視網膜的「前方」。",
+        hint: "近視是指遠處物體成像落於視網膜前面的狀況。"
+      },
+      {
+        id: 15,
+        question: "醫生說康康有散光的問題，請問散光是什麼構造的不平滑或表面彎曲度不規則所造成的？",
+        options: [
+          { label: "A", text: "角膜" },
+          { label: "B", text: "結膜" },
+          { label: "C", text: "視網膜" },
+          { label: "D", text: "鞏膜" }
+        ],
+        answer: "A",
+        rationale: "散光（Astigmatism）主要是因為眼球最前方的「角膜」（或水晶體）表面弧度不均勻，導致光線無法聚焦在單一點。",
+        hint: "眼球最前方透明的表層屈光構造。"
+      },
+      {
+        id: 16,
+        question: "圖片中何構造內有聽覺接受器？",
+        hasCustomImage: "Q16",
+        options: [
+          { label: "A", text: "E (耳殼)" },
+          { label: "B", text: "F (外耳道)" },
+          { label: "C", text: "G (鼓膜)" },
+          { label: "D", text: "H (耳蝸)" }
+        ],
+        answer: "D",
+        rationale: "耳蝸（Cochlea，圖中 H 標示處）形似蝸牛殼，內含柯蒂氏器與聽覺毛細胞，為真正的聽覺感受器。",
+        hint: "內耳中形狀像蝸牛的感音構造。"
+      },
+      {
+        id: 17,
+        question: "人體的內部構造中，做為胸腔與腹腔分界的肌肉是什麼？",
+        options: [
+          { label: "A", text: "肺臟" },
+          { label: "B", text: "心臟" },
+          { label: "C", text: "橫膈膜" },
+          { label: "D", text: "肝臟" }
+        ],
+        answer: "C",
+        rationale: "橫膈膜是一塊分隔胸腔與腹腔的圓頂狀肌肉，並參與呼吸時的升降動作。",
+        hint: "參與呼吸運動、呈薄膜狀分隔上下體腔的肌肉。"
+      },
+      {
+        id: 18,
+        question: "下列敘述何者錯誤？",
+        options: [
+          { label: "A", text: "控制紅綠色覺感受器的基因位在 X 染色體上" },
+          { label: "B", text: "女生比男生易有遺傳性的色盲" },
+          { label: "C", text: "患有嚴重色盲無法考駕照" },
+          { label: "D", text: "當光線進入眼睛時，會刺激不同的視錐細胞，進而看到不同的顏色" }
+        ],
+        answer: "B",
+        rationale: "紅綠色盲屬 X 染色體性聯隱性遺傳。女性需兩個 X 皆異常才發病；男性只要唯一的 X 異常即發病，因此「男生比女生容易」患有遺傳性色盲。",
+        hint: "男性的染色體為 XY，只要唯一的 X 帶有色盲基因就會表現。"
+      },
+      {
+        id: 19,
+        question: "小陳最近被醫生診斷有針眼，下列敘述何者錯誤？",
+        options: [
+          { label: "A", text: "又稱為麥粒腫" },
+          { label: "B", text: "主要是眼瞼汗腺阻塞而遭細菌感染化膿" },
+          { label: "C", text: "避免用不乾淨的手揉眼睛" },
+          { label: "D", text: "眼睛紅腫" }
+        ],
+        answer: "B",
+        rationale: "針眼（麥粒腫）主要是眼瞼的皮脂腺或麥氏腺（瞼板腺）受葡萄球菌感染發炎化膿，而非「汗腺」。",
+        hint: "針眼涉及的是分泌油脂的腺體感染，而非汗液腺體。"
+      },
+      {
+        id: 20,
+        question: "關於紫外線與防晒乳的描述，何者錯誤？",
+        options: [
+          { label: "A", text: "選用防晒係數大一點的，就可以一勞永逸不用一直補擦防晒乳" },
+          { label: "B", text: "防晒係數代表防禦 UVB 的能力，數字越大代表防晒時間越久" },
+          { label: "C", text: "依紫外線的指數不同，晒傷的時間也會不一樣" },
+          { label: "D", text: "防晒乳是幫助皮膚減少晒傷機會，平時還是要做好防晒的措施如撐陽傘和穿長袖防晒衣服" }
+        ],
+        answer: "A",
+        rationale: "防曬乳會因汗水、油脂擦拭而流失流失，無論防曬係數（SPF）高低，每隔 2～3 小時皆需重新補擦，無法一勞永逸。",
+        hint: "流汗與磨擦會使防曬膜破壞，因此必須定期補充。"
+      },
+      {
+        id: 21,
+        question: "使用牙線時，將牙線繞於雙手中指後拉緊，並使用雙手的哪兩根手指頭來操作？",
+        options: [
+          { label: "A", text: "大拇指和食指" },
+          { label: "B", text: "食指和中指" },
+          { label: "C", text: "中指和無名指" },
+          { label: "D", text: "無名指和小姆指" }
+        ],
+        answer: "A",
+        rationale: "正確使用牙線：將牙線固定於雙手中指，並利用雙手「大拇指與食指」靈活調整方向與伸入牙縫潔牙。",
+        hint: "最靈活敏捷的前兩隻手指。"
+      },
+      {
+        id: 22,
+        question: "針對青春痘的形成原因，對應的處理方式何者錯誤？",
+        options: [
+          { label: "A", text: "因油脂分泌過多造成，可以適時的清洗，降低毛細孔阻塞" },
+          { label: "B", text: "因飲食或熬夜等生活習慣造成，無法於生活中排除，只能靠化妝遮掩痘痘" },
+          { label: "C", text: "因細菌感染造成，可適當選用含藥性的洗臉用品" },
+          { label: "D", text: "因內分泌問題造成，可尋求專業醫師的診斷搭配處方用藥控制" }
+        ],
+        answer: "B",
+        rationale: "生活作息與飲食可透過調整獲得改善。靠濃厚化妝遮蓋會堵塞毛孔，反而使發炎與痤瘡加重。",
+        hint: "化妝覆蓋皮膚反而會加速毛孔阻塞。"
+      },
+      {
+        id: 23,
+        question: "志林的夢想是希望成為無國界義工，為地球盡一份心力，目前擔任環境整潔社的社長，推動校內垃圾分類，是哪一種健康的表現？",
+        options: [
+          { label: "A", text: "生理" },
+          { label: "B", text: "心理" },
+          { label: "C", text: "社會" },
+          { label: "D", text: "心靈" }
+        ],
+        answer: "C",
+        rationale: "熱心參與社團、服務學校公共事務、建立良好人際合作與關懷社會環境，屬於「社會健康（Social Health）」的範疇。",
+        hint: "包含參與公共團體、人際互動與社會服務的完好狀態。"
+      },
+      {
+        id: 24,
+        question: "近年來肺癌已經竄升為癌症好發率第一名，而罹患肺癌的因素很多，以室內空氣品質惡化（如吸菸）或家中三等親內曾有人罹患肺癌，罹病風險較高。請問這與影響健康因素的哪兩個有相關？",
+        options: [
+          { label: "A", text: "生活型態與環境" },
+          { label: "B", text: "環境與醫療服務系統" },
+          { label: "C", text: "醫療服務系統與生物遺傳" },
+          { label: "D", text: "生活型態與生物遺傳" }
+        ],
+        answer: "D",
+        rationale: "「吸菸行為/室內二手菸」屬於個人的生活型態因素；而「三等親家族病史」則屬於生物遺傳因素。",
+        hint: "個人吸菸屬生活習慣，家族病史屬於體質基因。"
+      },
+      {
+        id: 25,
+        question: "下列哪個選項是屬於心理影響生理健康的例子？",
+        options: [
+          { label: "A", text: "梁山伯因為過度思念祝英台，終日不食，染上肺疾" },
+          { label: "B", text: "李白特立獨行的性格受到宦官排擠而抑鬱寡歡，終日酗酒解悶" },
+          { label: "C", text: "林黛玉看到花兒凋謝不禁想起自己寄人籬下，於是感傷的將花兒埋葬" },
+          { label: "D", text: "范仲淹看到國家被外族入侵，憂國憂民而寫出「先天下之憂而憂」等千古名言" }
+        ],
+        answer: "A",
+        rationale: "梁山伯因情緒思念（心理）導致終日不食、體力衰竭並染上肺疾器官病變（生理），是心理直接引發生理病變的典範。",
+        hint: "相思之苦（心理）導致器官患病（生理）。"
+      },
+      {
+        id: 26,
+        question: "有關「人體的外部構造」，下列敘述何者錯誤？",
+        options: [
+          { label: "A", text: "背側體腔包含顱腔及脊髓腔" },
+          { label: "B", text: "腹側體腔包含胸腔、腹腔及骨盆腔" },
+          { label: "C", text: "腹腔裡面有肺臟及心臟" },
+          { label: "D", text: "骨盆腔裡有膀胱、直腸及肛門" }
+        ],
+        answer: "C",
+        rationale: "肺臟與心臟位於「胸腔」內，並由橫膈膜與腹腔隔開；腹腔內主要為胃、腸、肝臟、膽囊、腎臟等器官。",
+        hint: "心臟與肺臟位於橫膈膜上方的體腔。"
+      }
+    ];
+
+    // --- 主程式元件 ---
+    function App() {
+      const [mode, setMode] = useState('home'); // 'home', 'practice', 'exam', 'result'
+      const [currentIndex, setCurrentIndex] = useState(0);
+      const [userAnswers, setUserAnswers] = useState({}); // { questionId: 'A' }
+      const [flagged, setFlagged] = useState({}); // { questionId: true }
+      const [showHint, setShowHint] = useState(false);
+      const [showExplanation, setShowExplanation] = useState(false);
+      const [timeLeft, setTimeLeft] = useState(45 * 60); // 45分鐘倒數
+      const [timerActive, setTimerActive] = useState(false);
+
+      const currentQ = quizQuestions[currentIndex];
+
+      // 倒數計時器
+      useEffect(() => {
+        let timer = null;
+        if (mode === 'exam' && timerActive && timeLeft > 0) {
+          timer = setInterval(() => {
+            setTimeLeft(prev => prev - 1);
+          }, 1000);
+        } else if (timeLeft === 0 && mode === 'exam') {
+          handleSubmitExam();
+        }
+        return () => clearInterval(timer);
+      }, [mode, timerActive, timeLeft]);
+
+      // 開始練習模式
+      const startPractice = () => {
+        setMode('practice');
+        setCurrentIndex(0);
+        setUserAnswers({});
+        setShowHint(false);
+        setShowExplanation(false);
+      };
+
+      // 開始考試模式
+      const startExam = () => {
+        setMode('exam');
+        setCurrentIndex(0);
+        setUserAnswers({});
+        setFlagged({});
+        setTimeLeft(45 * 60);
+        setTimerActive(true);
+      };
+
+      // 選擇答案
+      const handleSelectOption = (optLabel) => {
+        const updated = { ...userAnswers, [currentQ.id]: optLabel };
+        setUserAnswers(updated);
+        
+        if (mode === 'practice') {
+          setShowExplanation(true);
+        }
+      };
+
+      // 切換劃記
+      const toggleFlag = (qId) => {
+        setFlagged(prev => ({ ...prev, [qId]: !prev[qId] }));
+      };
+
+      // 提交試卷
+      const handleSubmitExam = () => {
+        setTimerActive(false);
+        setMode('result');
+      };
+
+      // 計算成績
+      const scoreAnalysis = useMemo(() => {
+        let correctCount = 0;
+        quizQuestions.forEach(q => {
+          if (userAnswers[q.id] === q.answer) {
+            correctCount++;
+          }
+        });
+        const score = Math.round((correctCount / quizQuestions.length) * 100);
+        return { correctCount, total: quizQuestions.length, score };
+      }, [userAnswers]);
+
+      // 時間格式化 mm:ss
+      const formatTime = (seconds) => {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col bg-slate-100">
+          {/* Header */}
+          <header className="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
+            <div className="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+              <div className="flex items-center gap-2 cursor-pointer" onClick={() => setMode('home')}>
+                <div className="bg-white/20 p-2 rounded-lg">
+                  <i data-lucide="book-open" className="w-6 h-6"></i>
+                </div>
+                <div>
+                  <h1 className="font-bold text-lg leading-tight">國中健體 互動題庫</h1>
+                  <p className="text-xs text-indigo-200">單元測驗與國考練習平台</p>
+                </div>
+              </div>
+
+              {mode !== 'home' && (
+                <div className="flex items-center gap-3">
+                  {mode === 'exam' && (
+                    <div className="flex items-center gap-1.5 bg-indigo-900/60 px-3 py-1.5 rounded-full text-sm font-mono border border-indigo-400/30">
+                      <i data-lucide="clock" className="w-4 h-4 text-amber-300"></i>
+                      <span>{formatTime(timeLeft)}</span>
+                    </div>
+                  )}
+                  <button 
+                    onClick={() => setMode('home')}
+                    className="text-xs bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-lg transition border border-indigo-400/30">
+                    返回首頁
+                  </button>
+                </div>
+              )}
+            </div>
+          </header>
+
+          {/* Main Content */}
+          <main className="flex-grow max-w-5xl w-full mx-auto p-4 md:p-6 flex flex-col">
+            
+            {/* 首頁 / 模式選擇 */}
+            {mode === 'home' && (
+              <div className="my-auto py-8">
+                <div className="text-center max-w-xl mx-auto mb-10">
+                  <span className="bg-indigo-100 text-indigo-700 text-xs font-semibold px-3 py-1 rounded-full">精選題庫</span>
+                  <h2 className="text-3xl font-extrabold mt-3 text-slate-800">健康與體育 線上測驗系統</h2>
+                  <p className="text-slate-600 mt-2 text-sm">收錄 26 題經典題型，包含器官功能、護眼保健、耳齒衛教與體能健康概念。</p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+                  {/* 練習模式 Card */}
+                  <div className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all border border-slate-200/80 flex flex-col justify-between group">
+                    <div>
+                      <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <i data-lucide="brain-circuit" className="w-6 h-6"></i>
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-800 mb-2">練習模式 (Practice)</h3>
+                      <p className="text-slate-600 text-sm leading-relaxed mb-4">
+                        即時回饋作答結果！每題點選答案後會立刻顯示對錯、詳細觀念解析與引導提示，適合考前複習與觀念釐清。
+                      </p>
+                    </div>
+                    <button 
+                      onClick={startPractice}
+                      className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-md">
+                      <span>開始練習</span>
+                      <i data-lucide="arrow-right" className="w-4 h-4"></i>
+                    </button>
+                  </div>
+
+                  {/* 考試模式 Card */}
+                  <div className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all border border-slate-200/80 flex flex-col justify-between group">
+                    <div>
+                      <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <i data-lucide="file-check-2" className="w-6 h-6"></i>
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-800 mb-2">考試模式 (Exam)</h3>
+                      <p className="text-slate-600 text-sm leading-relaxed mb-4">
+                        模擬正式考試環境！限時 45 分鐘作答，具備題目劃記與配題導覽。交卷後產出完整成績單與診斷分析。
+                      </p>
+                    </div>
+                    <button 
+                      onClick={startExam}
+                      className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-md">
+                      <span>開始模擬考試</span>
+                      <i data-lucide="arrow-right" className="w-4 h-4"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 練習與考試模式介面 */}
+            {(mode === 'practice' || mode === 'exam') && (
+              <div className="grid lg:grid-cols-4 gap-6 flex-grow">
+                {/* 題目答題區 (佔 3 欄) */}
+                <div className="lg:col-span-3 flex flex-col">
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex-grow flex flex-col justify-between">
+                    
+                    <div>
+                      {/* 上方題目狀態條 */}
+                      <div className="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
+                        <div className="flex items-center gap-2">
+                          <span className="bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded-lg text-sm">
+                            第 {currentIndex + 1} / {quizQuestions.length} 題
+                          </span>
+                          {mode === 'exam' && (
+                            <button 
+                              onClick={() => toggleFlag(currentQ.id)}
+                              className={`px-3 py-1 text-xs rounded-lg flex items-center gap-1 font-medium border transition ${
+                                flagged[currentQ.id] 
+                                  ? 'bg-amber-100 text-amber-700 border-amber-300' 
+                                  : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
+                              }`}>
+                              <i data-lucide="bookmark" className="w-3.5 h-3.5"></i>
+                              <span>{flagged[currentQ.id] ? '已劃記' : '劃記此題'}</span>
+                            </button>
+                          )}
+                        </div>
+
+                        {mode === 'practice' && (
+                          <button 
+                            onClick={() => setShowHint(!showHint)}
+                            className="text-xs text-amber-600 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg flex items-center gap-1 transition border border-amber-200">
+                            <i data-lucide="lightbulb" className="w-3.5 h-3.5"></i>
+                            <span>{showHint ? '隱藏提示' : '答題提示'}</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* 提示方塊 (練習模式) */}
+                      {mode === 'practice' && showHint && (
+                        <div className="mb-4 p-3 bg-amber-50 border-l-4 border-amber-400 text-amber-800 text-sm rounded-r-lg flex items-start gap-2">
+                          <i data-lucide="help-circle" className="w-4 h-4 mt-0.5 shrink-0"></i>
+                          <div>
+                            <span className="font-bold">解題小幫手：</span>{currentQ.hint}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 題目內文 */}
+                      <h3 className="text-lg font-bold text-slate-800 mb-4 leading-relaxed">
+                        {currentQ.question}
+                      </h3>
+
+                      {/* 題目包含的特殊示意圖 (如 Q4, Q14, Q16) */}
+                      {currentQ.hasCustomImage === 'Q4' && <EyeImagingQ4 />}
+                      {currentQ.hasCustomImage === 'Q16' && <EarStructureQ16 />}
+
+                      {/* 選項列表 */}
+                      <div className="space-y-3 my-6">
+                        {currentQ.options.map((opt) => {
+                          const isSelected = userAnswers[currentQ.id] === opt.label;
+                          const isCorrect = opt.label === currentQ.answer;
+
+                          let btnStyle = "border-slate-200 hover:border-indigo-300 hover:bg-slate-50 text-slate-700";
+                          
+                          if (mode === 'practice' && userAnswers[currentQ.id]) {
+                            if (isCorrect) {
+                              btnStyle = "border-emerald-500 bg-emerald-50 text-emerald-900 font-bold ring-2 ring-emerald-200";
+                            } else if (isSelected && !isCorrect) {
+                              btnStyle = "border-rose-500 bg-rose-50 text-rose-900 font-bold ring-2 ring-rose-200";
+                            } else {
+                              btnStyle = "border-slate-200 opacity-50";
+                            }
+                          } else if (isSelected) {
+                            btnStyle = "border-indigo-600 bg-indigo-50 text-indigo-900 font-bold ring-2 ring-indigo-200";
+                          }
+
+                          return (
+                            <button
+                              key={opt.label}
+                              onClick={() => handleSelectOption(opt.label)}
+                              className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between group ${btnStyle}`}>
+                              <div className="flex items-center gap-3">
+                                <span className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shrink-0 ${
+                                  isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 group-hover:bg-indigo-100 group-hover:text-indigo-700'
+                                }`}>
+                                  {opt.label}
+                                </span>
+                                <span className="text-sm md:text-base">{opt.text}</span>
+                              </div>
+
+                              {mode === 'practice' && userAnswers[currentQ.id] && (
+                                <div>
+                                  {isCorrect && <i data-lucide="check-circle-2" className="w-6 h-6 text-emerald-600"></i>}
+                                  {isSelected && !isCorrect && <i data-lucide="x-circle" className="w-6 h-6 text-rose-500"></i>}
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Q14 的選項圖示加強 */}
+                      {currentQ.hasCustomImage === 'Q14' && (
+                        <div className="grid grid-cols-2 gap-2 mt-2 mb-4">
+                          <EyeOptionSVG type="A" />
+                          <EyeOptionSVG type="B" />
+                          <EyeOptionSVG type="C" />
+                          <EyeOptionSVG type="D" />
+                        </div>
+                      )}
+
+                      {/* 解析方塊 (練習模式作答後顯示) */}
+                      {mode === 'practice' && showExplanation && (
+                        <div className="mt-6 p-4 rounded-xl bg-slate-900 text-white animate-fadeIn">
+                          <div className="flex items-center gap-2 text-emerald-400 font-bold mb-2 text-sm">
+                            <i data-lucide="book-open-check" className="w-4 h-4"></i>
+                            <span>觀念解析 (正確答案：{currentQ.answer})</span>
+                          </div>
+                          <p className="text-sm text-slate-200 leading-relaxed">
+                            {currentQ.rationale}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 下方分頁按鈕控制 */}
+                    <div className="flex justify-between items-center mt-6 pt-4 border-t border-slate-100">
+                      <button
+                        onClick={() => {
+                          setCurrentIndex(prev => Math.max(0, prev - 1));
+                          setShowHint(false);
+                          if (mode === 'practice') setShowExplanation(!!userAnswers[quizQuestions[currentIndex - 1]?.id]);
+                        }}
+                        disabled={currentIndex === 0}
+                        className="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center gap-1">
+                        <i data-lucide="chevron-left" className="w-4 h-4"></i>
+                        <span>上一題</span>
+                      </button>
+
+                      <div className="text-xs text-slate-400 font-medium hidden sm:block">
+                        答題進度: {Object.keys(userAnswers).length} / {quizQuestions.length}
+                      </div>
+
+                      {currentIndex < quizQuestions.length - 1 ? (
+                        <button
+                          onClick={() => {
+                            setCurrentIndex(prev => Math.min(quizQuestions.length - 1, prev + 1));
+                            setShowHint(false);
+                            if (mode === 'practice') setShowExplanation(!!userAnswers[quizQuestions[currentIndex + 1]?.id]);
+                          }}
+                          className="px-5 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition flex items-center gap-1 shadow-md">
+                          <span>下一題</span>
+                          <i data-lucide="chevron-right" className="w-4 h-4"></i>
+                        </button>
+                      ) : (
+                        mode === 'exam' ? (
+                          <button
+                            onClick={handleSubmitExam}
+                            className="px-5 py-2 rounded-xl text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition flex items-center gap-1 shadow-md">
+                            <i data-lucide="send" className="w-4 h-4"></i>
+                            <span>確認交卷</span>
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => setMode('home')}
+                            className="px-5 py-2 rounded-xl text-sm font-bold bg-slate-800 text-white hover:bg-slate-900 transition">
+                            完成練習
+                          </button>
+                        )
+                      )}
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* 右側導覽畫板 (佔 1 欄) */}
+                <div className="lg:col-span-1">
+                  <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 sticky top-20">
+                    <h4 className="font-bold text-slate-700 text-sm mb-3 flex items-center justify-between">
+                      <span>試題導覽</span>
+                      <span className="text-xs font-normal text-slate-500">共 {quizQuestions.length} 題</span>
+                    </h4>
+
+                    {/* 答題卡 Grid */}
+                    <div className="grid grid-cols-5 gap-2 max-h-80 overflow-y-auto custom-scrollbar p-1">
+                      {quizQuestions.map((q, idx) => {
+                        const isAnswered = !!userAnswers[q.id];
+                        const isCurrent = idx === currentIndex;
+                        const isFlagged = flagged[q.id];
+
+                        let statusBg = "bg-slate-100 text-slate-600 border-slate-200";
+                        if (isCurrent) {
+                          statusBg = "bg-indigo-600 text-white font-bold ring-2 ring-indigo-300 border-indigo-600";
+                        } else if (isAnswered) {
+                          statusBg = "bg-emerald-100 text-emerald-700 border-emerald-300 font-semibold";
+                        }
+
+                        return (
+                          <button
+                            key={q.id}
+                            onClick={() => {
+                              setCurrentIndex(idx);
+                              setShowHint(false);
+                              if (mode === 'practice') setShowExplanation(!!userAnswers[q.id]);
+                            }}
+                            className={`h-9 rounded-lg text-xs border flex items-center justify-center relative transition ${statusBg}`}>
+                            {idx + 1}
+                            {isFlagged && (
+                              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full"></span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* 狀態說明 */}
+                    <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-500 space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded bg-indigo-600 inline-block"></span>
+                        <span>當前選取題目</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded bg-emerald-100 border border-emerald-300 inline-block"></span>
+                        <span>已作答題目</span>
+                      </div>
+                      {mode === 'exam' && (
+                        <div className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded bg-amber-500 inline-block"></span>
+                          <span>標記劃記題號</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 考試模式的提交按鈕 */}
+                    {mode === 'exam' && (
+                      <button
+                        onClick={handleSubmitExam}
+                        className="w-full mt-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition shadow-md flex items-center justify-center gap-1.5">
+                        <i data-lucide="check-square" className="w-4 h-4"></i>
+                        <span>立即交卷</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 成績結算與檢討畫面 (Exam Result) */}
+            {mode === 'result' && (
+              <div className="max-w-4xl mx-auto w-full space-y-6">
+                
+                {/* 成績總覽 Card */}
+                <div className="bg-white rounded-2xl p-6 md:p-8 shadow-md border border-slate-200 text-center relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-500"></div>
+                  
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">測驗成績總覽</span>
+                  <div className="text-5xl md:text-6xl font-black text-indigo-700 my-3">
+                    {scoreAnalysis.score} <span className="text-2xl text-slate-400 font-normal">分</span>
+                  </div>
+                  
+                  <p className="text-slate-600 text-sm">
+                    答對 {scoreAnalysis.correctCount} 題，共 {scoreAnalysis.total} 題 （答對率 {Math.round((scoreAnalysis.correctCount / scoreAnalysis.total) * 100)}%）
+                  </p>
+
+                  <div className="flex justify-center gap-4 mt-6">
+                    <button
+                      onClick={startExam}
+                      className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition text-sm flex items-center gap-2 shadow-sm">
+                      <i data-lucide="rotate-ccw" className="w-4 h-4"></i>
+                      <span>重新測驗</span>
+                    </button>
+                    <button
+                      onClick={() => setMode('home')}
+                      className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition text-sm">
+                      返回首頁
+                    </button>
+                  </div>
+                </div>
+
+                {/* 逐題檢討清單 */}
+                <div className="bg-white rounded-2xl p-6 shadow-md border border-slate-200">
+                  <h3 className="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
+                    <i data-lucide="list-checks" className="w-5 h-5 text-indigo-600"></i>
+                    <span>試題檢討與觀念解析</span>
+                  </h3>
+
+                  <div className="space-y-6">
+                    {quizQuestions.map((q, idx) => {
+                      const userAns = userAnswers[q.id];
+                      const isCorrect = userAns === q.answer;
+
+                      return (
+                        <div 
+                          key={q.id} 
+                          className={`p-5 rounded-xl border-2 transition ${
+                            isCorrect ? 'border-emerald-200 bg-emerald-50/30' : 'border-rose-200 bg-rose-50/30'
+                          }`}>
+                          <div className="flex items-start justify-between gap-3 mb-2">
+                            <span className="font-bold text-slate-800 text-base">
+                              第 {idx + 1} 題：{q.question}
+                            </span>
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold shrink-0 ${
+                              isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                            }`}>
+                              {isCorrect ? '答對' : '答錯'}
+                            </span>
+                          </div>
+
+                          {/* 題目圖示 */}
+                          {q.hasCustomImage === 'Q4' && <EyeImagingQ4 />}
+                          {q.hasCustomImage === 'Q16' && <EarStructureQ16 />}
+
+                          {/* 選項展示 */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 my-3">
+                            {q.options.map(opt => {
+                              let optionClass = "bg-white border-slate-200 text-slate-600";
+                              if (opt.label === q.answer) {
+                                optionClass = "bg-emerald-100 border-emerald-400 text-emerald-900 font-bold";
+                              } else if (opt.label === userAns && !isCorrect) {
+                                optionClass = "bg-rose-100 border-rose-400 text-rose-900 font-bold";
+                              }
+
+                              return (
+                                <div key={opt.label} className={`p-2.5 rounded-lg border text-xs flex items-center gap-2 ${optionClass}`}>
+                                  <span className="font-bold">{opt.label}.</span>
+                                  <span>{opt.text}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* 解析 */}
+                          <div className="mt-3 p-3 bg-slate-800 text-white rounded-lg text-xs leading-relaxed">
+                            <span className="text-emerald-400 font-bold block mb-1">觀念解析：</span>
+                            {q.rationale}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+          </main>
+
+          {/* Footer */}
+          <footer className="bg-white border-t border-slate-200 py-4 mt-auto">
+            <div className="max-w-5xl mx-auto px-4 text-center text-xs text-slate-500">
+              國中健康與體育數位學習題庫系統 &copy; 2026 翰林出版試卷數位化版本
+            </div>
+          </footer>
+        </div>
+      );
+    }
+
+    // 渲染 React 應用
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+
+    // 初始化 Lucide 圖示
+    setTimeout(() => {
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    }, 200);
+  </script>
+</body>
+</html>
