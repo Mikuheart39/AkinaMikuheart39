@@ -1,0 +1,2748 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鉗工基礎工作組 競賽題庫線上練習與測驗系統</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --edit-color: #8b5cf6;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: #64748b;
+        }
+
+        /* 檔案操作按鈕區 */
+        .file-actions {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .file-btn {
+            background: #f1f5f9;
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .file-btn:hover {
+            background: #e2e8f0;
+        }
+
+        /* 控制面板 */
+        .control-panel {
+            background: var(--card-bg);
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: #f1f5f9;
+            color: var(--text-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #e2e8f0;
+        }
+
+        .btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .btn.active-edit {
+            background: var(--edit-color);
+            color: white;
+            border-color: var(--edit-color);
+        }
+
+        .timer-box {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #d97706;
+            background: #fef3c7;
+            padding: 6px 14px;
+            border-radius: 20px;
+            display: none;
+        }
+
+        /* 題目導覽網格 */
+        .nav-grid {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .nav-btn {
+            padding: 6px 0;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: #ffffff;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .nav-btn.answered { background: #dbeafe; border-color: #93c5fd; color: #1e40af; }
+        .nav-btn.correct { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
+        .nav-btn.wrong { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+
+        /* 題目卡片 */
+        .question-card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .question-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #0f172a;
+        }
+
+        .question-image {
+            max-width: 100%;
+            max-height: 300px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: block;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-item {
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .option-item:hover { border-color: #94a3b8; background: #f8fafc; }
+        .option-item.selected { border-color: var(--primary-color); background: #eff6ff; }
+        .option-item.correct { border-color: var(--success-color); background: #ecfdf5; color: #065f46; font-weight: 600; }
+        .option-item.wrong { border-color: var(--danger-color); background: #fef2f2; color: #991b1b; }
+
+        /* 編輯模式 UI */
+        .edit-row { margin-bottom: 12px; }
+        .edit-row label { font-weight: 600; display: block; margin-bottom: 4px; font-size: 0.9rem; }
+        .edit-input { width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; }
+        .edit-select { padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; }
+        .edit-flex { display: flex; gap: 10px; align-items: center; }
+        .remove-img-btn { background: var(--danger-color); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+
+        .action-bar { text-align: center; margin-top: 30px; }
+        .submit-btn {
+            padding: 12px 36px; font-size: 1.1rem; background: var(--success-color); color: white;
+            border: none; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+        }
+        .submit-btn:hover { background: #059669; }
+
+        /* 成績彈窗 */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content {
+            background: white; padding: 32px; border-radius: 16px; max-width: 450px;
+            width: 90%; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+        .score-display { font-size: 3rem; font-weight: 800; color: var(--primary-color); margin: 16px 0; }
+        .stat-detail { margin-bottom: 20px; color: #64748b; font-size: 1rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="file-actions">
+            <button class="file-btn" onclick="exportJSON()">💾 匯出題庫 (JSON)</button>
+            <button class="file-btn" onclick="importJSON()">📂 匯入題庫 (JSON)</button>
+        </div>
+        <h1>鉗工基礎工作組 競賽題庫練習與測驗系統</h1>
+        <div class="subtitle">學科題庫（共200題，每題2分，滿分100分）</div>
+    </header>
+
+    <!-- 控制面板：選擇分區與模式 -->
+    <div class="control-panel">
+        <div>
+            <span style="font-weight: bold; margin-right: 8px;">選擇分區：</span>
+            <div class="btn-group" id="rangeBtns">
+                <button class="btn active" onclick="changeRange(1)">第1~50題</button>
+                <button class="btn" onclick="changeRange(2)">第51~100題</button>
+                <button class="btn" onclick="changeRange(3)">第101~150題</button>
+                <button class="btn" onclick="changeRange(4)">第151~200題</button>
+            </div>
+        </div>
+
+        <div>
+            <span style="font-weight: bold; margin-right: 8px;">模式：</span>
+            <div class="btn-group" id="modeBtns">
+                <button class="btn active" onclick="changeMode('practice')">💡 練習模式</button>
+                <button class="btn" onclick="changeMode('exam')">📝 考試模式</button>
+                <button class="btn" onclick="changeMode('edit')">✏️ 編輯模式</button>
+            </div>
+        </div>
+
+        <div class="timer-box" id="timerBox">⏱️ 答題計時：<span id="timerText">00:00</span></div>
+    </div>
+
+    <!-- 題號快速跳轉導覽 -->
+    <div class="nav-grid" id="navGrid"></div>
+
+    <!-- 題目容器 -->
+    <div id="quizContainer"></div>
+
+    <!-- 考試交卷按鈕 -->
+    <div class="action-bar" id="actionBar" style="display: none;">
+        <button class="submit-btn" onclick="submitExam()">完成作答並交卷</button>
+    </div>
+</div>
+
+<!-- 考試結算彈窗 -->
+<div class="modal" id="scoreModal">
+    <div class="modal-content">
+        <h2>🎉 測驗完成！</h2>
+        <div class="score-display" id="modalScore">0 分</div>
+        <div class="stat-detail" id="modalDetail">
+            答對：0 題 | 答錯：0 題<br>
+            總作答時間：<span id="modalTime">00:00</span>
+        </div>
+        <button class="btn active" style="width: 100%; padding: 12px;" onclick="closeModal()">檢視答題狀況</button>
+    </div>
+</div>
+
+<script>
+// ==================== 題庫資料 ====================
+let questionBank = [
+    {
+        "id": 1,
+        "question": "王水的組成是？",
+        "options": {
+            "A": "稀鹽酸3份加稀硝酸1份",
+            "B": "濃鹽酸3份加濃硝酸1份",
+            "C": "濃鹽酸1份加濃硝酸3份",
+            "D": "濃鹽酸3份加濃硫酸1份"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 2,
+        "question": "水與下列何者作用後立刻產生氫氣：",
+        "options": {
+            "A": "鎂",
+            "B": "磷",
+            "C": "鋅",
+            "D": "鈉"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 3,
+        "question": "實驗時，常於冰浴中加入食鹽，則溫度可降至",
+        "options": {
+            "A": "5°C",
+            "B": "−10°C",
+            "C": "−20°C",
+            "D": "−40°C"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 4,
+        "question": "對不銹鋼腐蝕性較大的酸是：",
+        "options": {
+            "A": "硫酸",
+            "B": "鹽酸",
+            "C": "硝酸",
+            "D": "醋酸"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 5,
+        "question": "多少百分濃度之酒精消毒殺菌力最強？",
+        "options": {
+            "A": "50",
+            "B": "70",
+            "C": "90",
+            "D": "100"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 6,
+        "question": "所謂軟玻璃是指？",
+        "options": {
+            "A": "鈉玻璃",
+            "B": "鉀玻璃",
+            "C": "硼玻璃",
+            "D": "石英玻璃"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 7,
+        "question": "所謂硬玻璃是指？",
+        "options": {
+            "A": "鈉玻璃",
+            "B": "鉀玻璃",
+            "C": "硼玻璃",
+            "D": "石英玻璃"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 8,
+        "question": "滴定分析操作時，未知液應置於",
+        "options": {
+            "A": "量筒",
+            "B": "蒸發皿",
+            "C": "量瓶",
+            "D": "錐形瓶"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 9,
+        "question": "切斷小口徑玻璃管之操作是以",
+        "options": {
+            "A": "鑽石刀鋸斷",
+            "B": "銼刀鋸斷",
+            "C": "鑽石刀切出缺口，在火焰中熱裂斷開",
+            "D": "銼刀銼出缺口，用手折斷"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 10,
+        "question": "玻璃加工時，玻璃管之拉伸應在？",
+        "options": {
+            "A": "火焰中",
+            "B": "火焰外",
+            "C": "氧化焰中",
+            "D": "還原焰中"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 11,
+        "question": "下列何者為稀硫酸液的製備方法？",
+        "options": {
+            "A": "在攪拌下，加水於濃硫酸中",
+            "B": "在攪拌下，加濃硫酸於水中",
+            "C": "水加於濃硫酸，或濃硫酸加於水都無所謂",
+            "D": "水與濃硫酸兩者一起倒入混合"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 12,
+        "question": "天平箱內常放置之乾燥劑為？",
+        "options": {
+            "A": "矽膠",
+            "B": "濃硫酸",
+            "C": "芒硝",
+            "D": "智利硝石"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 13,
+        "question": "冰醋酸即",
+        "options": {
+            "A": "冰點下之醋酸液",
+            "B": "純度98%以上之醋酸",
+            "C": "兩分子醋酸脫水而成者",
+            "D": "醋酸與冰塊之混合液"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 14,
+        "question": "使用坩堝前應先清洗、灼熱後置下列何者之中？",
+        "options": {
+            "A": "冰箱",
+            "B": "暗室",
+            "C": "乾燥器",
+            "D": "實驗桌"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 15,
+        "question": "乾冰加丙酮做為冷凍劑時最低溫度約可達：",
+        "options": {
+            "A": "0°C",
+            "B": "−20°C",
+            "C": "−80°C",
+            "D": "−120°C"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 16,
+        "question": "以吸量管吸取濃鹽酸時，應在？",
+        "options": {
+            "A": "抽氣室內以嘴吸取",
+            "B": "室內以嘴吸取",
+            "C": "抽氣室內以安全吸球吸取",
+            "D": "室內以安全吸球吸取"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 17,
+        "question": "盛裝鹼性溶液如氫氧化鈉應避免使用何種瓶塞保存？",
+        "options": {
+            "A": "玻璃塞",
+            "B": "橡皮塞",
+            "C": "木塞",
+            "D": "塑膠塞"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 18,
+        "question": "以比重計測定液體之比重時，最重要的記錄是？",
+        "options": {
+            "A": "液體之黏度",
+            "B": "液體之顏色",
+            "C": "當時之室溫",
+            "D": "液體之溫度"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 19,
+        "question": "天平上有灰塵時應？",
+        "options": {
+            "A": "用毛筆或羽毛清除之",
+            "B": "以抹布擦淨之",
+            "C": "以水洗淨之",
+            "D": "用口吹氣吹除之"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 20,
+        "question": "有刻度或厚玻璃器具洗淨後，如需急用時可",
+        "options": {
+            "A": "放在電氣乾燥器內高溫乾燥",
+            "B": "以溫和熱風吹乾",
+            "C": "用布或衛生紙擦乾",
+            "D": "倒放在架上使自然滴乾"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 21,
+        "question": "將沸石或毛細管加入欲蒸餾的液體中，是為了",
+        "options": {
+            "A": "避免突沸現象",
+            "B": "形成共沸物",
+            "C": "破壞共沸物",
+            "D": "加速蒸餾"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 22,
+        "question": "調整本生燈，使內焰及外焰為何種顏色時，即得最適當的火焰？",
+        "options": {
+            "A": "內焰為紅色，外焰為藍色",
+            "B": "內焰為淺紅色，外焰為淺藍色",
+            "C": "內焰為淡紫色，外焰為淡藍色",
+            "D": "內焰為淺藍色，外焰為淡紫色"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 23,
+        "question": "蒸餾時，沸石加入的時間應為？",
+        "options": {
+            "A": "開始加熱前",
+            "B": "將要沸騰時",
+            "C": "開始沸騰時",
+            "D": "隨時都可以"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 24,
+        "question": "使用天平稱量碘時必須裝在密封的秤量瓶中以避免：",
+        "options": {
+            "A": "手髒",
+            "B": "碘被氧化",
+            "C": "吸濕",
+            "D": "損傷天平"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 25,
+        "question": "比重之定義為？",
+        "options": {
+            "A": "任何溫度物質密度相對於4°C水密度",
+            "B": "4°C物質密度相對於4°C水密度",
+            "C": "15°C物質密度相對於15°C水密度",
+            "D": "20°C物質密度相對於20°C水密度"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 26,
+        "question": "利用沸點不同以分離液體混合物的操作為",
+        "options": {
+            "A": "昇華",
+            "B": "蒸餾",
+            "C": "萃取",
+            "D": "結晶"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 27,
+        "question": "用天平稱粉末時，應用",
+        "options": {
+            "A": "白報紙",
+            "B": "稱量瓶",
+            "C": "錐形瓶",
+            "D": "燒杯"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 28,
+        "question": "下列何項天平操作是錯誤的？",
+        "options": {
+            "A": "要調水平",
+            "B": "要檢視天平零點",
+            "C": "須止動稱盤，方可加砝碼或稱物",
+            "D": "稱盤弄髒，要用手或紙去擦拭"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 29,
+        "question": "保特瓶材質為？",
+        "options": {
+            "A": "聚酯",
+            "B": "聚醯胺",
+            "C": "聚丙烯腈",
+            "D": "聚乙烯"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 30,
+        "question": "植物油脂之製造方法有壓榨及：",
+        "options": {
+            "A": "蒸發",
+            "B": "蒸餾",
+            "C": "萃取",
+            "D": "結晶"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 31,
+        "question": "具有脫水作用的濃酸為？",
+        "options": {
+            "A": "硫酸",
+            "B": "硝酸",
+            "C": "磷酸",
+            "D": "鹽酸"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 32,
+        "question": "實驗時皮膚不小心碰到AgNO3溶液會變成？",
+        "options": {
+            "A": "紅色",
+            "B": "白色",
+            "C": "黃色",
+            "D": "黑色"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 33,
+        "question": "化學方程式中△符號表示？",
+        "options": {
+            "A": "沉澱",
+            "B": "氣體發生",
+            "C": "加熱",
+            "D": "水溶液"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 34,
+        "question": "硫酸銅的水溶液的顏色是：",
+        "options": {
+            "A": "綠色",
+            "B": "藍色",
+            "C": "黃色",
+            "D": "紅色"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 35,
+        "question": "酚酞指示劑由酸性變鹼性的變色情形是",
+        "options": {
+            "A": "紅→黃",
+            "B": "黃→紅",
+            "C": "無色→紅",
+            "D": "紅→無色"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 36,
+        "question": "普通玻璃容器不能盛裝",
+        "options": {
+            "A": "硫酸",
+            "B": "硝酸",
+            "C": "氫氟酸",
+            "D": "氫氯酸"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 37,
+        "question": "720克的水欲加入蔗糖使成為31.0%的溶液，則應加入蔗糖多少克？",
+        "options": {
+            "A": "135",
+            "B": "223",
+            "C": "325",
+            "D": "370"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 38,
+        "question": "含氯化亞鈷之矽膠當作乾燥劑時，若呈現以下何種顏色時表示它吸收水分已達飽和，故應加熱再生處理？",
+        "options": {
+            "A": "綠色",
+            "B": "藍色",
+            "C": "白色",
+            "D": "粉紅色"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 39,
+        "question": "比重瓶最適用於測定：",
+        "options": {
+            "A": "固體之密度",
+            "B": "液體之密度",
+            "C": "氣體之密度",
+            "D": "任何物質之密度"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 40,
+        "question": "想快速乾燥潮濕玻璃器材，可利用下列何物潤濕後，倒出再用空氣吹乾？",
+        "options": {
+            "A": "氯仿",
+            "B": "四氯化碳",
+            "C": "丙酮",
+            "D": "乙酸乙酯"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 41,
+        "question": "取20毫升濃鹽酸和大理石作用產生二氧化碳時，以下列何種器具量取最適當？",
+        "options": {
+            "A": "錐形瓶",
+            "B": "滴定管",
+            "C": "移液管",
+            "D": "量筒"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 42,
+        "question": "從水中萃取有機物的萃取液，必須用乾燥劑脫水，選用乾燥劑時不能有下列何者性質？",
+        "options": {
+            "A": "吸水力強",
+            "B": "不會吸附溶劑及溶質",
+            "C": "不吸附溶質，可吸附溶劑",
+            "D": "不與溶質及溶劑作用"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 43,
+        "question": "磨砂接口玻璃器具已標準化，且製作良好，一般不需塗抹凡士林等油脂，但接觸下列何試劑時仍須塗抹？",
+        "options": {
+            "A": "強酸",
+            "B": "強鹼",
+            "C": "氧化劑",
+            "D": "還原劑"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 44,
+        "question": "過濾晶體過程常使用無頸漏斗，其目的為何？",
+        "options": {
+            "A": "加速過濾",
+            "B": "減慢過濾",
+            "C": "避免在頸上長晶",
+            "D": "避免濾液跳上漏斗頸"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 45,
+        "question": "無色有機物因雜質而帶色時常用下列何物脫色？",
+        "options": {
+            "A": "活性碳",
+            "B": "硫酸鈉",
+            "C": "硫酸鎂",
+            "D": "矽膠"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 46,
+        "question": "理想的結晶溶劑應具備下列何性質？",
+        "options": {
+            "A": "高溫低溫溶解度都大",
+            "B": "高溫時溶解度大，低溫時小",
+            "C": "高溫時溶解度小，低溫時大",
+            "D": "高溫低溫溶解度都小"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 47,
+        "question": "重力過濾過程，有時候將濾紙折疊成槽型，其目的是什麼？",
+        "options": {
+            "A": "加速過濾",
+            "B": "減慢過濾",
+            "C": "可加滿濾液使澄清液沿槽流下",
+            "D": "可使濾紙超過漏斗上沿，以增加容量"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 48,
+        "question": "以分液漏斗萃取化合物時，分成兩層的液體如何取出？",
+        "options": {
+            "A": "先傾倒上層液後再傾出下層液",
+            "B": "打開活栓先放出下層後再出上層",
+            "C": "先傾倒上層液後打開活栓放出下層",
+            "D": "先打開活栓放出下層後，再由上端倒出上層"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 49,
+        "question": "移少量液體至另一容器時，適宜用下列何器具？",
+        "options": {
+            "A": "滴管",
+            "B": "滴定管",
+            "C": "吸管",
+            "D": "量筒"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 50,
+        "question": "大氣中的臭氧主要可保護地球上的生物免於受到何種侵害？",
+        "options": {
+            "A": "紅外線",
+            "B": "紫外線",
+            "C": "酸雨",
+            "D": "落塵"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 51,
+        "question": "欲使氣球能自然漂浮在空中，其填充氣體除了可用氫氣以外亦可用",
+        "options": {
+            "A": "He",
+            "B": "CO2",
+            "C": "CCl4",
+            "D": "Ar"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 52,
+        "question": "構成有機物的最重要元素是",
+        "options": {
+            "A": "N",
+            "B": "H",
+            "C": "S",
+            "D": "C"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 53,
+        "question": "明礬的淨水作用是",
+        "options": {
+            "A": "凝聚",
+            "B": "中和",
+            "C": "氧化還原",
+            "D": "過濾"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 54,
+        "question": "下列何者最容易氧化？",
+        "options": {
+            "A": "Fe",
+            "B": "Li",
+            "C": "Pb",
+            "D": "Au"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 55,
+        "question": "目前我國汽油中是添加何種化合物以提高辛烷值？",
+        "options": {
+            "A": "四乙基鉛",
+            "B": "甲基三級丁基酮",
+            "C": "甲基三級丁基醚",
+            "D": "甲苯"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 56,
+        "question": "氧化劑本身的反應是",
+        "options": {
+            "A": "還原",
+            "B": "氧化",
+            "C": "中和",
+            "D": "同時氧化與還原"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 57,
+        "question": "從實驗室出來發現手上有些部分變黃色了，這是不小心觸及下列那一種藥劑？",
+        "options": {
+            "A": "硫酸",
+            "B": "鹽酸",
+            "C": "硝酸銀",
+            "D": "硝酸"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 58,
+        "question": "沉澱分析法中，加入沉澱劑時要",
+        "options": {
+            "A": "急速加入",
+            "B": "慢慢加入",
+            "C": "劇烈攪動溶液",
+            "D": "與加入速率無關"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 59,
+        "question": "清洗具精確刻度之定量玻璃儀器時，何者為錯誤動作？",
+        "options": {
+            "A": "純水沖洗",
+            "B": "溶劑沖洗",
+            "C": "自然乾燥",
+            "D": "烘箱烘乾"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 60,
+        "question": "常溫常壓下為液態的金屬是？",
+        "options": {
+            "A": "汞",
+            "B": "錫",
+            "C": "鍺",
+            "D": "硒"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 61,
+        "question": "下列物質中，何者與水反應於室溫可產生氫氣？",
+        "options": {
+            "A": "鐵",
+            "B": "鋅",
+            "C": "鈉",
+            "D": "鹽酸"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 62,
+        "question": "陽離子交換樹脂，樹脂本身的電荷是？",
+        "options": {
+            "A": "正電",
+            "B": "負電",
+            "C": "中性",
+            "D": "正、負電兩種"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 63,
+        "question": "一般蒸餾水之pH值約在？",
+        "options": {
+            "A": "2～4",
+            "B": "5～7",
+            "C": "7～9",
+            "D": "9～11"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 64,
+        "question": "配製下列何種指示劑試液須用70%以上酒精溶液作為溶劑？",
+        "options": {
+            "A": "甲基橙",
+            "B": "甲基紅",
+            "C": "酚紅",
+            "D": "酚酞"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 65,
+        "question": "乙醇變成醋酸是",
+        "options": {
+            "A": "酸化反應",
+            "B": "催化反應",
+            "C": "氧化反應",
+            "D": "還原反應"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 66,
+        "question": "pH值是溶液中：",
+        "options": {
+            "A": "氫氣濃度的指示",
+            "B": "氫離子活性的指示",
+            "C": "緩衝鹽濃度的指示",
+            "D": "可中和酸量的指示"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 67,
+        "question": "重量分析時，由坩堝爐取出之坩堝：",
+        "options": {
+            "A": "應趁熱秤量，以免冷卻時吸入水分",
+            "B": "應立刻以水冷卻，然後秤量",
+            "C": "應放入乾燥器令其冷卻後方可秤量",
+            "D": "放置大氣中二小時秤量"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 68,
+        "question": "H+及OH−間之反應稱為：",
+        "options": {
+            "A": "氫化",
+            "B": "中和",
+            "C": "水解",
+            "D": "水和"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 69,
+        "question": "鄰苯二甲酸氫鉀(KHP)為下列何物質之標定劑？",
+        "options": {
+            "A": "I2",
+            "B": "HCl",
+            "C": "KMnO4",
+            "D": "NaOH"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 70,
+        "question": "碘與澱粉液接觸呈？",
+        "options": {
+            "A": "深藍色",
+            "B": "紫色",
+            "C": "紅色",
+            "D": "黃色"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 71,
+        "question": "俗稱大蘇打或海波之化合物是：",
+        "options": {
+            "A": "碳酸鈉",
+            "B": "碳酸氫鈉",
+            "C": "硫代硫酸鈉",
+            "D": "氧化鈣"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 72,
+        "question": "甲乙兩人射箭時，甲箭箭集中，但分數為零，乙每次都可射中紅心，分數很高。有關準確(accuracy)與精密(precision)的區別，下列何者正確？",
+        "options": {
+            "A": "甲不準又不精",
+            "B": "乙精而準",
+            "C": "甲準而不精",
+            "D": "乙準而不精"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 73,
+        "question": "在酸性液中無色的指示劑是？",
+        "options": {
+            "A": "甲基橙",
+            "B": "甲基紅",
+            "C": "石蕊試紙",
+            "D": "酚酞"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 74,
+        "question": "活性炭最易吸附的物質是？",
+        "options": {
+            "A": "極性化合物",
+            "B": "非極性化合物",
+            "C": "離子化合物",
+            "D": "兩性化合物"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 75,
+        "question": "試藥用濃硫酸的大約濃度(W%)為：",
+        "options": {
+            "A": "98",
+            "B": "80",
+            "C": "68",
+            "D": "38"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 76,
+        "question": "腐蝕玻璃最有效的酸是：",
+        "options": {
+            "A": "氫氟酸",
+            "B": "氫氯酸",
+            "C": "氫溴酸",
+            "D": "氫碘酸"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 77,
+        "question": "以HCl滴定NaOH液時，應採用的指示劑是？",
+        "options": {
+            "A": "甲基藍",
+            "B": "甲基紫",
+            "C": "甲基橙",
+            "D": "澱粉液"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 78,
+        "question": "下列何者在水中溶解度隨溫度升高而顯著增加？",
+        "options": {
+            "A": "AgCl",
+            "B": "Hg2Cl2",
+            "C": "PbCl2",
+            "D": "HgCl2"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 79,
+        "question": "還原劑在氧化還原反應中皆：",
+        "options": {
+            "A": "失去電子",
+            "B": "獲得電子",
+            "C": "獲得氫原子",
+            "D": "失去氧原子"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 80,
+        "question": "pH為2的溶液，其[H+]為多少？",
+        "options": {
+            "A": "0.1",
+            "B": "0.02",
+            "C": "0.01",
+            "D": "0.001"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 81,
+        "question": "強鹼和弱酸的滴定，常用的指示劑為？",
+        "options": {
+            "A": "甲基橙",
+            "B": "甲基紅",
+            "C": "酚紅",
+            "D": "酚酞"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 82,
+        "question": "硝酸銀的氨水溶液，遇下列何者，則析出銀附著於試管壁如鏡？",
+        "options": {
+            "A": "醇類",
+            "B": "醛類",
+            "C": "酮類",
+            "D": "酸類"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 83,
+        "question": "以EDTA測定水之總硬度時，使用之指示劑為",
+        "options": {
+            "A": "EBT",
+            "B": "酚酞",
+            "C": "甲基橙",
+            "D": "甲基紅"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 84,
+        "question": "EDTA測定水之硬度時，其pH應控制在約？",
+        "options": {
+            "A": "8",
+            "B": "10",
+            "C": "12",
+            "D": "13"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 85,
+        "question": "EDTA與金屬離子形成螯合物時，以下列何種莫耳比例結合？",
+        "options": {
+            "A": "4：1",
+            "B": "3：1",
+            "C": "2：1",
+            "D": "1：1"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 86,
+        "question": "若滴定3克食醋，需用20毫升0.1MKOH溶液，求該食醋中醋酸之百分率為多少？",
+        "options": {
+            "A": "4",
+            "B": "8",
+            "C": "12",
+            "D": "16"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 87,
+        "question": "下列何種標準溶液之配製必須用剛煮沸放冷的蒸餾水？",
+        "options": {
+            "A": "KMnO4",
+            "B": "AgNO3",
+            "C": "Na2S2O3",
+            "D": "EDTA"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 88,
+        "question": "良好的還原劑應具：",
+        "options": {
+            "A": "極易被還原",
+            "B": "具有強氧化力",
+            "C": "極易被氧化",
+            "D": "具有負的氧化數"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 89,
+        "question": "某物原重a克，加熱失水分後重量為b克，則原物中含水之百分率為多少？",
+        "options": {
+            "A": "b/a",
+            "B": "(a−b)/(a+b)",
+            "C": "b/(a+b)",
+            "D": "(a−b)/a"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 90,
+        "question": "酸鹼中和時，溶液之溫度為：",
+        "options": {
+            "A": "先降後昇",
+            "B": "上昇",
+            "C": "不變",
+            "D": "下降"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 91,
+        "question": "酚酞指示劑變色之pH範圍可能為下列何者？",
+        "options": {
+            "A": "3−5",
+            "B": "4−6",
+            "C": "6−8",
+            "D": "8−10"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 92,
+        "question": "下列有關pH值的敘述何者錯誤？",
+        "options": {
+            "A": "pH值可以等於0",
+            "B": "pH值可以為負數",
+            "C": "pH值愈大，[H+]愈小",
+            "D": "pH值愈大，酸性愈強"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 93,
+        "question": "欲中和200毫升之0.5M鹽酸溶液，需要1M氫氧化鈉溶液若干毫升？",
+        "options": {
+            "A": "100",
+            "B": "200",
+            "C": "300",
+            "D": "400"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 94,
+        "question": "以下何者不是標準溶液應具備之性質？",
+        "options": {
+            "A": "濃度穩定",
+            "B": "反應須完全",
+            "C": "須有明顯顏色",
+            "D": "反應須迅速"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 95,
+        "question": "以下何化合物非兩性物質？",
+        "options": {
+            "A": "氫氧化錳",
+            "B": "氫氧化鋁",
+            "C": "氫氧化錫",
+            "D": "氫氧化鉻"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 96,
+        "question": "油脂皂化價之定義為？",
+        "options": {
+            "A": "中和試料1克所含游離脂肪酸所需的氫氧化鉀毫克數",
+            "B": "試料1克完全鹼化所需氫氧化鉀之毫克數",
+            "C": "試料100克所反應的鹵素量換算為碘之克數",
+            "D": "試料1公斤加入碘化鉀所游離出碘之毫當量數"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 97,
+        "question": "皂化反應是由脂肪和何種溶液產生？",
+        "options": {
+            "A": "碳酸鈣",
+            "B": "氯化鈉",
+            "C": "氫氧化鈉",
+            "D": "草酸鈣"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 98,
+        "question": "以硝酸銀溶液滴定樣品中氯離子濃度係利用何種原理？",
+        "options": {
+            "A": "中和",
+            "B": "氧化還原",
+            "C": "沉澱物形成",
+            "D": "錯離子形成"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 99,
+        "question": "油脂碘價之定義為？",
+        "options": {
+            "A": "中和試料1克所含游離脂肪酸所需的氫氧化鉀毫克數",
+            "B": "試料1克完全鹼化所需氫氧化鉀之毫克數",
+            "C": "試料100克所反應的鹵素量換算為碘之克數",
+            "D": "試料1公斤加入碘化鉀所游離出碘之毫當量數"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 100,
+        "question": "碘定量法滴定過程中加入何種指示劑？",
+        "options": {
+            "A": "甲基紅",
+            "B": "甲基橙",
+            "C": "酚酞",
+            "D": "澱粉"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 101,
+        "question": "實驗室用的真空泵裏面所添加的液體通常是？",
+        "options": {
+            "A": "水",
+            "B": "硫酸",
+            "C": "礦物油",
+            "D": "植物油"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 102,
+        "question": "歐姆定律所述之電壓(V)，電阻(R)和電流(I)之關係為？",
+        "options": {
+            "A": "R=VI",
+            "B": "R=V/I",
+            "C": "I=VR",
+            "D": "I=R+V"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 103,
+        "question": "金屬圓扁管一端封閉，另端加壓則可伸直而轉動指針，顯示刻度乃是下列何種附件製成？",
+        "options": {
+            "A": "連通管",
+            "B": "巴登管",
+            "C": "皮托管",
+            "D": "橡皮管"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 104,
+        "question": "高壓瓶內之高壓氣體的放出，通常最重要的是需要經過：",
+        "options": {
+            "A": "安全閥",
+            "B": "減壓閥",
+            "C": "正回閥",
+            "D": "球閥"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 105,
+        "question": "不需要介質即可進行之熱傳導方式為：",
+        "options": {
+            "A": "熱擴散",
+            "B": "輻射",
+            "C": "對流",
+            "D": "傳導"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 106,
+        "question": "合金黃銅是下列那一項之固溶體？",
+        "options": {
+            "A": "Cu和Mn",
+            "B": "Cu和Zn",
+            "C": "Cu和Au",
+            "D": "Cu和Sn"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 107,
+        "question": "肥料使用最大量的是：",
+        "options": {
+            "A": "鉀肥",
+            "B": "磷肥",
+            "C": "硫肥",
+            "D": "氮肥"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 108,
+        "question": "馬口鐵是鍍下列何種金屬之鐵？",
+        "options": {
+            "A": "鋅",
+            "B": "錫",
+            "C": "鉻",
+            "D": "鎳"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 109,
+        "question": "石灰石常可略溶於水中而成暫時硬水乃因？",
+        "options": {
+            "A": "自然水中溶有CO2",
+            "B": "自然水呈弱鹼性",
+            "C": "CaCO3呈弱鹼性",
+            "D": "因石灰石中含有不純物"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 110,
+        "question": "當H2O2熱分解時，其產物為：",
+        "options": {
+            "A": "O3",
+            "B": "OH−",
+            "C": "H3O+",
+            "D": "O2"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 111,
+        "question": "在週期表中，下列哪一元素的位置最靠近中央？",
+        "options": {
+            "A": "鋰",
+            "B": "氟",
+            "C": "碳",
+            "D": "氧"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 112,
+        "question": "自來水以氯處理的主要目的是：",
+        "options": {
+            "A": "漂白",
+            "B": "殺菌",
+            "C": "除去有機物",
+            "D": "軟化水"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 113,
+        "question": "碳氫化合物於空氣中完全燃燒後變成：",
+        "options": {
+            "A": "水與一氧化碳",
+            "B": "水與二氧化碳",
+            "C": "水與氫",
+            "D": "甲烷與水煤氣"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 114,
+        "question": "下列水溶液之導電性最佳的是？",
+        "options": {
+            "A": "糖",
+            "B": "酒精",
+            "C": "丙酮",
+            "D": "食鹽"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 115,
+        "question": "金剛石的成分是：",
+        "options": {
+            "A": "金",
+            "B": "鐵",
+            "C": "矽",
+            "D": "碳"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 116,
+        "question": "霓虹燈內裝的氣體是：",
+        "options": {
+            "A": "氦",
+            "B": "氖",
+            "C": "氯",
+            "D": "氮"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 117,
+        "question": "有關乾電池，下列何者有誤？",
+        "options": {
+            "A": "放電時電池內發生氧化還原反應",
+            "B": "一個電池的電壓是2伏特",
+            "C": "正極是碳棒",
+            "D": "負極是鋅罐"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 118,
+        "question": "以白金為電極對稀硫酸通直流電時，一定時間內在陰極產生的氣體和在陽極產生的氣體，其莫耳數比是：",
+        "options": {
+            "A": "1：2",
+            "B": "1：1",
+            "C": "2：1",
+            "D": "4：1"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 119,
+        "question": "非金屬氧化物溶於水呈：",
+        "options": {
+            "A": "酸性",
+            "B": "中性",
+            "C": "鹼性",
+            "D": "不一定"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 120,
+        "question": "甲烷燃燒是甲烷的：",
+        "options": {
+            "A": "還原反應",
+            "B": "氧化反應",
+            "C": "取代反應",
+            "D": "中和反應"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 121,
+        "question": "硫酸可製造其他酸最主要原因：",
+        "options": {
+            "A": "沸點高",
+            "B": "比重大",
+            "C": "脫水性強",
+            "D": "溶解度大"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 122,
+        "question": "黃銅是下列那一項之合金？",
+        "options": {
+            "A": "銅與錳",
+            "B": "銅與鋅",
+            "C": "銅與鋁",
+            "D": "銅與錫"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 123,
+        "question": "水煤氣之主要成分為何？",
+        "options": {
+            "A": "CH4",
+            "B": "CH3OH",
+            "C": "CO",
+            "D": "CO2"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 124,
+        "question": "金屬腐蝕，對金屬而言是何作用？",
+        "options": {
+            "A": "還原",
+            "B": "氧化",
+            "C": "催化",
+            "D": "氮化"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 125,
+        "question": "大理石的主要成分是：",
+        "options": {
+            "A": "CaCO3",
+            "B": "Ca(OH)2",
+            "C": "CaO",
+            "D": "CaSO4"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 126,
+        "question": "有關水煤氣的下列敘述，何者不正確？",
+        "options": {
+            "A": "是水蒸氣與煤氣的混合氣體",
+            "B": "是一種工業原料",
+            "C": "是一種燃料",
+            "D": "燃燒時產生二氧化碳和水氣"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 127,
+        "question": "保利龍製品易造成公害，最主要的原因是？",
+        "options": {
+            "A": "體積龐大",
+            "B": "燃燒易生黑煙",
+            "C": "不易被微生物分解",
+            "D": "含有揮發性物質"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 128,
+        "question": "工業上用作中和劑之蘇打灰，其主要成分為：",
+        "options": {
+            "A": "NaOH",
+            "B": "Na2CO3",
+            "C": "Na2O",
+            "D": "NaHCO3"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 129,
+        "question": "下列有關海水的敘述，何者不正確？",
+        "options": {
+            "A": "沸點高於水",
+            "B": "密度與水相同",
+            "C": "凝固點比純水低",
+            "D": "沸騰後，沸點漸昇"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 130,
+        "question": "工業上製造無水酒精是於95%酒精中加入何者蒸餾而成？",
+        "options": {
+            "A": "乙醚",
+            "B": "丙酮",
+            "C": "苯",
+            "D": "甲醛"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 131,
+        "question": "製造人造雨加入的晶種是：",
+        "options": {
+            "A": "AgCl",
+            "B": "AgI",
+            "C": "NaCl",
+            "D": "AgF"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 132,
+        "question": "單位ppm意指",
+        "options": {
+            "A": "mL/Kg",
+            "B": "g/L",
+            "C": "十萬分之一",
+            "D": "百萬分之一"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 133,
+        "question": "實驗室中用鹽酸與二氧化錳混合加熱，以製備氯氣時，二氧化錳為：",
+        "options": {
+            "A": "氧化劑",
+            "B": "催化劑",
+            "C": "脫水劑",
+            "D": "還原劑"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 134,
+        "question": "一般以下列何種為標準電極？",
+        "options": {
+            "A": "氧電極",
+            "B": "氫電極",
+            "C": "氮電極",
+            "D": "氦電極"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 135,
+        "question": "鉛蓄電池負極是：",
+        "options": {
+            "A": "Pb",
+            "B": "PbO2",
+            "C": "Zn",
+            "D": "C"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 136,
+        "question": "氯作為漂白劑時，實際與漂白有關的是：",
+        "options": {
+            "A": "氯分子",
+            "B": "氫氯酸",
+            "C": "次氯酸",
+            "D": "氯離子"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 137,
+        "question": "白磷的分子式是：",
+        "options": {
+            "A": "P",
+            "B": "P4",
+            "C": "P5",
+            "D": "P8"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 138,
+        "question": "金屬鈉必須保存於：",
+        "options": {
+            "A": "水",
+            "B": "石油",
+            "C": "酒精",
+            "D": "甘油"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 139,
+        "question": "下列何者與水作用最激烈？",
+        "options": {
+            "A": "鉀",
+            "B": "鋁",
+            "C": "鋅",
+            "D": "鈣"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 140,
+        "question": "俗稱燒鹼者為：",
+        "options": {
+            "A": "Na2CO3",
+            "B": "Ca(OH)2",
+            "C": "Ca(HCO3)2",
+            "D": "NaOH"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 141,
+        "question": "氯化氫之水溶液稱為：",
+        "options": {
+            "A": "硫酸",
+            "B": "硝酸",
+            "C": "鹽酸",
+            "D": "鹼液"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 142,
+        "question": "哈柏法用以製造：",
+        "options": {
+            "A": "NH3",
+            "B": "NaOH",
+            "C": "Na2CO3",
+            "D": "NaHCO3"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 143,
+        "question": "俗稱果實肥者為：",
+        "options": {
+            "A": "氮肥",
+            "B": "磷肥",
+            "C": "鉀肥",
+            "D": "複合肥料"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 144,
+        "question": "玻璃的主要成分為：",
+        "options": {
+            "A": "Na2O",
+            "B": "SiO2",
+            "C": "CaO",
+            "D": "PbO"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 145,
+        "question": "苯的分子式為：",
+        "options": {
+            "A": "C6H12",
+            "B": "C6H14",
+            "C": "C6H8",
+            "D": "C6H6"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 146,
+        "question": "下列何者為甲醚之結構異構物？",
+        "options": {
+            "A": "甲醇",
+            "B": "甲醛",
+            "C": "乙醛",
+            "D": "乙醇"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 147,
+        "question": "甲醇俗稱：",
+        "options": {
+            "A": "木精",
+            "B": "穀精",
+            "C": "酒精",
+            "D": "甲精"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 148,
+        "question": "福馬林為何種物質的水溶液？",
+        "options": {
+            "A": "甲酸",
+            "B": "甲醛",
+            "C": "乙酸",
+            "D": "乙醛"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 149,
+        "question": "葡萄糖屬於：",
+        "options": {
+            "A": "醛醣",
+            "B": "酮醣",
+            "C": "寡糖",
+            "D": "多醣"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 150,
+        "question": "蛋白質的構成單元是：",
+        "options": {
+            "A": "葡萄糖",
+            "B": "核苷酸",
+            "C": "胺基酸",
+            "D": "脂肪酸"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 151,
+        "question": "含碳量最高的煤是：",
+        "options": {
+            "A": "泥煤",
+            "B": "褐煤",
+            "C": "煙煤",
+            "D": "無煙煤"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 152,
+        "question": "生化需氧量簡稱：",
+        "options": {
+            "A": "DO",
+            "B": "COD",
+            "C": "BOD",
+            "D": "BHC"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 153,
+        "question": "下列何者為熱固塑膠？",
+        "options": {
+            "A": "聚乙烯",
+            "B": "聚氯乙烯",
+            "C": "電木",
+            "D": "尼龍"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 154,
+        "question": "何種同位素可測定古生物年代？",
+        "options": {
+            "A": "氮",
+            "B": "碳",
+            "C": "氧",
+            "D": "硫"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 155,
+        "question": "現今世界上使用量最大之原料來源是：",
+        "options": {
+            "A": "煤炭",
+            "B": "石油",
+            "C": "天然氣",
+            "D": "鐵礦"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 156,
+        "question": "無鉛汽油含有：",
+        "options": {
+            "A": "甲基三級丁基醚",
+            "B": "乙酸甲酯",
+            "C": "乙醇",
+            "D": "丙酮"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 157,
+        "question": "大氣臭氧層的破壞是因為人類使用過多的：",
+        "options": {
+            "A": "氮氧化物",
+            "B": "碳氫化物",
+            "C": "硫氧化物",
+            "D": "氟氯碳化物"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 158,
+        "question": "對硫酸的性質而言，下列敘述何者是錯誤的？",
+        "options": {
+            "A": "好的脫水劑",
+            "B": "強酸",
+            "C": "與水作用會吸熱",
+            "D": "與大部分的金屬作用可產生氫氣"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 159,
+        "question": "阿斯匹靈化學名稱為？",
+        "options": {
+            "A": "柳酸乙酯",
+            "B": "乙醯柳酸",
+            "C": "苯甲酸",
+            "D": "柳酸"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 160,
+        "question": "水質優良的河水，其溶氧量：",
+        "options": {
+            "A": "一定高",
+            "B": "一定低",
+            "C": "並無一定標準",
+            "D": "要維持在半飽和狀態"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 161,
+        "question": "氟氯碳化合物大量使用會破壞大氣中何種物質？",
+        "options": {
+            "A": "氮氣",
+            "B": "氧氣",
+            "C": "二氧化碳",
+            "D": "臭氧"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 162,
+        "question": "鍋垢的主要成分是：",
+        "options": {
+            "A": "Na2CO3",
+            "B": "NaCl",
+            "C": "CaCO3",
+            "D": "H2SO4"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 163,
+        "question": "欲除去硬水中的鈣離子可加入下列何物質？",
+        "options": {
+            "A": "NaNO3",
+            "B": "Na2CO3",
+            "C": "NaCl",
+            "D": "Na2S"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 164,
+        "question": "Al(OH)3屬於何種化合物？",
+        "options": {
+            "A": "酸性",
+            "B": "鹼性",
+            "C": "兩性",
+            "D": "爆裂物"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 165,
+        "question": "壓力不變溫度升高時，水中之溶氧會：",
+        "options": {
+            "A": "升高",
+            "B": "降低",
+            "C": "不變",
+            "D": "不一定"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 166,
+        "question": "花香及果香，大都屬於下列那種有機物？",
+        "options": {
+            "A": "澱粉",
+            "B": "纖維素",
+            "C": "酯類",
+            "D": "蛋白質"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 167,
+        "question": "黑色火藥是一種：",
+        "options": {
+            "A": "純物質",
+            "B": "元素",
+            "C": "化合物",
+            "D": "混合物"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 168,
+        "question": "18K金的金塊中純金的含量是：",
+        "options": {
+            "A": "18%",
+            "B": "50%",
+            "C": "75%",
+            "D": "95%"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 169,
+        "question": "物質發生化學變化時原子重新排列生成新的物質，但各原子的重量：",
+        "options": {
+            "A": "不變",
+            "B": "增加",
+            "C": "減少",
+            "D": "有的增加，有的減少"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 170,
+        "question": "下列何者為非聚合物？",
+        "options": {
+            "A": "蛋白質",
+            "B": "葡萄糖",
+            "C": "澱粉",
+            "D": "核酸"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 171,
+        "question": "脂肪在NaOH中經皂化作用生成物為肥皂和：",
+        "options": {
+            "A": "甘油",
+            "B": "乙醇",
+            "C": "乙二醇",
+            "D": "乙酸"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 172,
+        "question": "下列金屬何者適合做為陰極保護以免鐵橋生銹？",
+        "options": {
+            "A": "Mg",
+            "B": "Sn",
+            "C": "Pb",
+            "D": "Ni"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 173,
+        "question": "溴蒸氣是：",
+        "options": {
+            "A": "無色無毒",
+            "B": "棕色無毒",
+            "C": "紫色有毒",
+            "D": "紅粽色有毒"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 174,
+        "question": "下列那一種物理性質可用來判別純物質？",
+        "options": {
+            "A": "透明度",
+            "B": "沸點",
+            "C": "顏色",
+            "D": "味覺"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 175,
+        "question": "下列何種性質屬於化學性質？",
+        "options": {
+            "A": "沸點",
+            "B": "溶解度",
+            "C": "酸鹼度",
+            "D": "比重"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 176,
+        "question": "下列何者不屬於界面活性劑？",
+        "options": {
+            "A": "乳化劑",
+            "B": "漂白劑",
+            "C": "洗衣粉",
+            "D": "肥皂"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 177,
+        "question": "發高燒時，常在身體上抹酒精，是利用什麼原理？",
+        "options": {
+            "A": "酒精氣化吸熱",
+            "B": "酒精氣化放熱",
+            "C": "酒精凝結吸熱",
+            "D": "酒精凝結放熱"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 178,
+        "question": "大氣中的臭氧可保護動、植物避免什麼的傷害？",
+        "options": {
+            "A": "紅外光",
+            "B": "酸雨",
+            "C": "放射能",
+            "D": "紫外線"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 179,
+        "question": "下列何者為保特瓶之特性？",
+        "options": {
+            "A": "屬網狀聚合物",
+            "B": "為熱塑性聚合物",
+            "C": "為熱固性聚合物",
+            "D": "遇熱溶化，冷了也不會再變硬"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 180,
+        "question": "下列何者不是聚合物？",
+        "options": {
+            "A": "澱粉",
+            "B": "蔗糖",
+            "C": "蛋白質",
+            "D": "橡膠"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 181,
+        "question": "下列物質何者莫耳溶解度最大？",
+        "options": {
+            "A": "",
+            "B": "",
+            "C": "",
+            "D": ""
+        },
+        "answer": "D"
+    },
+    {
+        "id": 182,
+        "question": "重量莫耳濃度之定義係指：",
+        "options": {
+            "A": "每升溶液中溶質的克數",
+            "B": "每升溶液中溶質的莫耳數",
+            "C": "1000克溶液中溶質的莫耳數",
+            "D": "1000克溶劑中溶質的莫耳數"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 183,
+        "question": "下列銀化合物中，哪一種不溶於稀硝酸中？",
+        "options": {
+            "A": "Ag2SO4",
+            "B": "AgCl",
+            "C": "AgH2PO4",
+            "D": "AgClO4"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 184,
+        "question": "某硫酸銅結晶加熱後失去結晶水，得無水硫酸銅，其重量約為原重之3/4，則該結晶所含之結晶水之數目為(Cu＝63.5，S=32)",
+        "options": {
+            "A": "1",
+            "B": "2",
+            "C": "3",
+            "D": "4"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 185,
+        "question": "二級醇氧化後會形成",
+        "options": {
+            "A": "酮",
+            "B": "醛",
+            "C": "酸",
+            "D": "三級醇"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 186,
+        "question": "下列何者不會使過錳酸鉀溶液褪色？",
+        "options": {
+            "A": "甲酸",
+            "B": "乙醇",
+            "C": "丙酮",
+            "D": "異丙醇"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 187,
+        "question": "以下何種離子最常利用於錯離子滴定法定量",
+        "options": {
+            "A": "Na+",
+            "B": "K+",
+            "C": "Ca2+",
+            "D": "Cl－"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 188,
+        "question": "蛋白質與硝酸汞及硝酸亞汞混合物共熱，會變成",
+        "options": {
+            "A": "紅色",
+            "B": "黃色",
+            "C": "藍色",
+            "D": "白色"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 189,
+        "question": "下列何者不容易與銀離子發生沉澱反應？",
+        "options": {
+            "A": "Cl－",
+            "B": "Br－",
+            "C": "SO42-",
+            "D": "S2-"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 190,
+        "question": "下面何種離子溶液，加HCl即產生白色沉澱：",
+        "options": {
+            "A": "Na+",
+            "B": "Hg2+",
+            "C": "Ag+",
+            "D": "Al3+"
+        },
+        "answer": "C"
+    },
+    {
+        "id": 191,
+        "question": "pH為5的溶液，其[OH－]為多少M？",
+        "options": {
+            "A": "10-9",
+            "B": "10-7",
+            "C": "10-5",
+            "D": "10-4"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 192,
+        "question": "某廢水中含有Hg2+之重量百分率為0.0003%，則此廢水中之Hg2+含量為多少ppm？",
+        "options": {
+            "A": "3",
+            "B": "30",
+            "C": "300",
+            "D": "3000"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 193,
+        "question": "下列何種標準溶液必須盛裝於棕色瓶中",
+        "options": {
+            "A": "HCl",
+            "B": "K2Cr2O7",
+            "C": "EDTA",
+            "D": "AgNO3"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 194,
+        "question": "滴定碘時，使用下列何種標準溶液",
+        "options": {
+            "A": "EDTA",
+            "B": "Na2S2O3",
+            "C": "H2C2O4",
+            "D": "K2Cr2O7"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 195,
+        "question": "以下何者不宜作為氧化滴定的滴定劑？",
+        "options": {
+            "A": "Sn2+",
+            "B": "MnO4－",
+            "C": "Cr2O72-",
+            "D": "ClO4－"
+        },
+        "answer": "A"
+    },
+    {
+        "id": 196,
+        "question": "以下何者，不適合作為還原滴定的滴定劑？",
+        "options": {
+            "A": "Sn2+",
+            "B": "MnO4－",
+            "C": "Ti3+",
+            "D": "Fe2+"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 197,
+        "question": "以EDTA滴定水中硬度係利用何種原理",
+        "options": {
+            "A": "中和",
+            "B": "氧化還原",
+            "C": "沉澱物形成",
+            "D": "錯離子形成"
+        },
+        "answer": "D"
+    },
+    {
+        "id": 198,
+        "question": "純水在100℃時之Kw=1×10–12，則相同溫度下0.01MNaOH水溶液，其pH值為多少",
+        "options": {
+            "A": "2",
+            "B": "10",
+            "C": "11",
+            "D": "12"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 199,
+        "question": "電功(W)、電壓(V)、電阻(R)及電流(I)的關係何者正確？",
+        "options": {
+            "A": "WI＝VR",
+            "B": "I2R＝W",
+            "C": "IR＝W",
+            "D": "IVR＝W"
+        },
+        "answer": "B"
+    },
+    {
+        "id": 200,
+        "question": "溫度增高10C，若反應速率增1倍，試問溫度增高50°C時，其反應速率為初速之若干倍？",
+        "options": {
+            "A": "5",
+            "B": "10",
+            "C": "32",
+            "D": "64"
+        },
+        "answer": "C"
+    }
+];
+// =================================================
+
+// 全局狀態控制
+let currentRange = 1; 
+let currentMode = 'practice'; // 'practice' | 'exam' | 'edit'
+let userAnswers = {}; 
+let timerInterval = null;
+let secondsElapsed = 0;
+
+window.onload = function() { renderQuiz(); };
+
+// ===== 檔案處理功能 =====
+function exportJSON() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(questionBank, null, 4));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "鉗工題庫_自訂.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+}
+
+function importJSON() {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json';
+    fileInput.onchange = e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.readAsText(file, 'UTF-8');
+        reader.onload = readerEvent => {
+            try {
+                const parsed = JSON.parse(readerEvent.target.result);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    questionBank = parsed;
+                    alert('✅ 題庫匯入成功！');
+                    renderQuiz();
+                } else {
+                    alert('格式錯誤：無法識別題庫陣列。');
+                }
+            } catch(err) {
+                alert('檔案解析失敗，請確認是否為正確的 JSON 檔！');
+            }
+        }
+    }
+    fileInput.click();
+}
+
+// ===== 控制面板功能 =====
+function changeRange(range) {
+    currentRange = range;
+    userAnswers = {};
+    document.querySelectorAll('#rangeBtns .btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx + 1 === range);
+    });
+    if (currentMode === 'exam') resetTimer();
+    renderQuiz();
+}
+
+function changeMode(mode) {
+    currentMode = mode;
+    userAnswers = {};
+
+    document.querySelectorAll('#modeBtns .btn').forEach((btn) => {
+        btn.classList.remove('active', 'active-edit');
+        if (mode === 'practice' && btn.innerText.includes('練習')) btn.classList.add('active');
+        if (mode === 'exam' && btn.innerText.includes('考試')) btn.classList.add('active');
+        if (mode === 'edit' && btn.innerText.includes('編輯')) btn.classList.add('active-edit');
+    });
+
+    const timerBox = document.getElementById('timerBox');
+    const actionBar = document.getElementById('actionBar');
+
+    if (mode === 'exam') {
+        timerBox.style.display = 'inline-block';
+        actionBar.style.display = 'block';
+        startTimer();
+    } else {
+        timerBox.style.display = 'none';
+        actionBar.style.display = 'none';
+        stopTimer();
+    }
+    renderQuiz();
+}
+
+// ===== 圖片處理功能 =====
+function uploadImage(qId, input) {
+    const file = input.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const q = questionBank.find(x => x.id === qId);
+            if(q) {
+                q.image = e.target.result;
+                renderQuiz();
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function removeImage(qId) {
+    const q = questionBank.find(x => x.id === qId);
+    if (q) {
+        delete q.image;
+        renderQuiz();
+    }
+}
+
+// ===== 編輯更新功能 =====
+function updateQuestionField(qId, field, value, optKey = null) {
+    const q = questionBank.find(x => x.id === qId);
+    if (!q) return;
+    if (field === 'question') q.question = value;
+    if (field === 'answer') q.answer = value;
+    if (field === 'option') q.options[optKey] = value;
+}
+
+// ===== 核心渲染功能 =====
+function getCurrentQuestions() {
+    const startIdx = (currentRange - 1) * 50;
+    return questionBank.slice(startIdx, startIdx + 50);
+}
+
+function renderQuiz() {
+    const questions = getCurrentQuestions();
+    const container = document.getElementById('quizContainer');
+    const navGrid = document.getElementById('navGrid');
+    
+    container.innerHTML = '';
+    navGrid.innerHTML = '';
+
+    questions.forEach((q, index) => {
+        const qNumber = (currentRange - 1) * 50 + index + 1;
+        const userAnswer = userAnswers[q.id];
+
+        // 1. 建立導覽按鈕
+        const navBtn = document.createElement('button');
+        navBtn.className = 'nav-btn';
+        navBtn.innerText = qNumber;
+        if (userAnswer && currentMode !== 'edit') {
+            if (currentMode === 'practice') navBtn.classList.add(userAnswer === q.answer ? 'correct' : 'wrong');
+            else navBtn.classList.add('answered');
+        }
+        navBtn.onclick = () => document.getElementById(`q_card_${q.id}`).scrollIntoView({ behavior: 'smooth' });
+        navGrid.appendChild(navBtn);
+
+        // 2. 建立題目卡片
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.id = `q_card_${q.id}`;
+
+        if (currentMode === 'edit') {
+            // === 編輯模式介面 ===
+            let imgHTML = q.image ? `
+                <div style="margin-bottom: 10px;">
+                    <img src="${q.image}" class="question-image">
+                    <button class="remove-img-btn" onclick="removeImage(${q.id})">🗑️ 刪除圖片</button>
+                </div>` : '';
+
+            card.innerHTML = `
+                <div class="edit-row">
+                    <label>題目 ${qNumber}：</label>
+                    <input type="text" class="edit-input" value="${q.question}" onchange="updateQuestionField(${q.id}, 'question', this.value)">
+                </div>
+                <div class="edit-row">
+                    <label>圖片 (選填)：</label>
+                    ${imgHTML}
+                    <input type="file" accept="image/*" onchange="uploadImage(${q.id}, this)">
+                </div>
+                <div class="edit-row edit-flex"><label>選項 A：</label><input type="text" class="edit-input" value="${q.options.A}" onchange="updateQuestionField(${q.id}, 'option', this.value, 'A')"></div>
+                <div class="edit-row edit-flex"><label>選項 B：</label><input type="text" class="edit-input" value="${q.options.B}" onchange="updateQuestionField(${q.id}, 'option', this.value, 'B')"></div>
+                <div class="edit-row edit-flex"><label>選項 C：</label><input type="text" class="edit-input" value="${q.options.C}" onchange="updateQuestionField(${q.id}, 'option', this.value, 'C')"></div>
+                <div class="edit-row edit-flex"><label>選項 D：</label><input type="text" class="edit-input" value="${q.options.D}" onchange="updateQuestionField(${q.id}, 'option', this.value, 'D')"></div>
+                <div class="edit-row edit-flex">
+                    <label>正確答案：</label>
+                    <select class="edit-select" onchange="updateQuestionField(${q.id}, 'answer', this.value)">
+                        <option value="A" ${q.answer === 'A' ? 'selected' : ''}>A</option>
+                        <option value="B" ${q.answer === 'B' ? 'selected' : ''}>B</option>
+                        <option value="C" ${q.answer === 'C' ? 'selected' : ''}>C</option>
+                        <option value="D" ${q.answer === 'D' ? 'selected' : ''}>D</option>
+                    </select>
+                </div>
+            `;
+        } else {
+            // === 練習 / 考試模式介面 ===
+            let imgHTML = q.image ? `<img src="${q.image}" class="question-image" alt="題目圖片">` : '';
+            let optionsHTML = '';
+            
+            for (const [key, val] of Object.entries(q.options)) {
+                let optionClass = 'option-item';
+                if (userAnswer) {
+                    if (currentMode === 'practice') {
+                        if (key === q.answer) optionClass += ' correct';
+                        else if (key === userAnswer) optionClass += ' wrong';
+                    } else {
+                        if (key === userAnswer) optionClass += ' selected';
+                    }
+                }
+                optionsHTML += `<div class="${optionClass}" onclick="selectOption(${q.id}, '${key}')"><strong>(${key})</strong> ${val}</div>`;
+            }
+
+            card.innerHTML = `
+                <div class="question-title">${qNumber}. ${q.question}</div>
+                ${imgHTML}
+                <div class="options-list">${optionsHTML}</div>
+            `;
+        }
+        container.appendChild(card);
+    });
+}
+
+function selectOption(qId, selectedKey) {
+    if (currentMode === 'practice' && userAnswers[qId]) return; 
+    userAnswers[qId] = selectedKey;
+    renderQuiz();
+}
+
+// ===== 計時與結算 =====
+function startTimer() { stopTimer(); secondsElapsed = 0; updateTimerDisplay(); timerInterval = setInterval(() => { secondsElapsed++; updateTimerDisplay(); }, 1000); }
+function stopTimer() { if (timerInterval) clearInterval(timerInterval); }
+function resetTimer() { stopTimer(); startTimer(); }
+function updateTimerDisplay() {
+    document.getElementById('timerText').innerText = `${String(Math.floor(secondsElapsed / 60)).padStart(2, '0')}:${String(secondsElapsed % 60).padStart(2, '0')}`;
+}
+
+function submitExam() {
+    stopTimer();
+    const questions = getCurrentQuestions();
+    let correctCount = 0;
+    questions.forEach(q => { if (userAnswers[q.id] === q.answer) correctCount++; });
+    document.getElementById('modalScore').innerText = `${correctCount * 2} 分`;
+    document.getElementById('modalDetail').innerHTML = `
+        答對：${correctCount} 題 | 答錯：${50 - correctCount} 題<br>
+        答題時間：${String(Math.floor(secondsElapsed / 60)).padStart(2, '0')} 分 ${String(secondsElapsed % 60).padStart(2, '0')} 秒`;
+    document.getElementById('scoreModal').style.display = 'flex';
+}
+
+function closeModal() { document.getElementById('scoreModal').style.display = 'none'; }
+</script>
+
+</body>
+</html>
