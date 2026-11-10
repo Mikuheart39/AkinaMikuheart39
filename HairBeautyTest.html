@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家政職群【美髮組】、【美容組】競賽題庫線上練習與測驗系統</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --edit-color: #8b5cf6;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: #64748b;
+        }
+
+        /* 控制面板 */
+        .control-panel {
+            background: var(--card-bg);
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: #f1f5f9;
+            color: var(--text-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #e2e8f0;
+        }
+
+        .btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .timer-box {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #d97706;
+            background: #fef3c7;
+            padding: 6px 14px;
+            border-radius: 20px;
+            display: none;
+        }
+
+        /* 題目導覽網格 */
+        .nav-grid {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .nav-btn {
+            padding: 6px 0;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: #ffffff;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .nav-btn.answered { background: #dbeafe; border-color: #93c5fd; color: #1e40af; }
+        .nav-btn.correct { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
+        .nav-btn.wrong { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+
+        /* 題目卡片 */
+        .question-card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .question-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #0f172a;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-item {
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .option-item:hover { border-color: #94a3b8; background: #f8fafc; }
+        .option-item.selected { border-color: var(--primary-color); background: #eff6ff; }
+        .option-item.correct { border-color: var(--success-color); background: #ecfdf5; color: #065f46; font-weight: 600; }
+        .option-item.wrong { border-color: var(--danger-color); background: #fef2f2; color: #991b1b; }
+
+        .action-bar { text-align: center; margin-top: 30px; }
+        .submit-btn {
+            padding: 12px 36px; font-size: 1.1rem; background: var(--success-color); color: white;
+            border: none; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+        }
+        .submit-btn:hover { background: #059669; }
+
+        /* 成績彈窗 */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content {
+            background: white; padding: 32px; border-radius: 16px; max-width: 450px;
+            width: 90%; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+        .score-display { font-size: 3rem; font-weight: 800; color: var(--primary-color); margin: 16px 0; }
+        .stat-detail { margin-bottom: 20px; color: #64748b; font-size: 1rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>家政職群【美髮組】、【美容組】競賽題庫練習與測驗系統</h1>
+        <div class="subtitle">115雲林縣國民中學技藝教育競賽 職群概論（共200題）</div>
+    </header>
+
+    <!-- 控制面板：選擇分區與模式 -->
+    <div class="control-panel">
+        <div>
+            <span style="font-weight: bold; margin-right: 8px;">選擇分區：</span>
+            <div class="btn-group" id="rangeBtns">
+                <button class="btn active" onclick="changeRange(1)">第1~50題</button>
+                <button class="btn" onclick="changeRange(2)">第51~100題</button>
+                <button class="btn" onclick="changeRange(3)">第101~150題</button>
+                <button class="btn" onclick="changeRange(4)">第151~200題</button>
+            </div>
+        </div>
+
+        <div>
+            <span style="font-weight: bold; margin-right: 8px;">模式：</span>
+            <div class="btn-group" id="modeBtns">
+                <button class="btn active" onclick="changeMode('practice')">💡 練習模式</button>
+                <button class="btn" onclick="changeMode('exam')">📝 考試模式</button>
+            </div>
+        </div>
+
+        <div class="timer-box" id="timerBox">⏱️ 答題計時：<span id="timerText">00:00</span></div>
+    </div>
+
+    <!-- 題號快速跳轉導覽 -->
+    <div class="nav-grid" id="navGrid"></div>
+
+    <!-- 題目容器 -->
+    <div id="quizContainer"></div>
+
+    <!-- 考試交卷按鈕 -->
+    <div class="action-bar" id="actionBar" style="display: none;">
+        <button class="submit-btn" onclick="submitExam()">完成作答並交卷</button>
+    </div>
+</div>
+
+<!-- 考試結算彈窗 -->
+<div class="modal" id="scoreModal">
+    <div class="modal-content">
+        <h2>🎉 測驗完成！</h2>
+        <div class="score-display" id="modalScore">0 分</div>
+        <div class="stat-detail" id="modalDetail">
+            答對：0 題 | 答錯：0 題<br>
+            總作答時間：<span id="modalTime">00:00</span>
+        </div>
+        <button class="btn active" style="width: 100%; padding: 12px;" onclick="closeModal()">檢視答題狀況</button>
+    </div>
+</div>
+
+<script>
+// ==================== 題庫資料載入與解析 ====================
+// 將原始文本轉換為系統可讀取的 JSON 格式
+const rawData = `1.( 1 ) 遇有訪客需引導時，接待者與訪客行進時的位置 (1)接待者在前，訪客在後 (2)接待者在後，訪客在前 (3)兩者並行 (4)隨意。
+2.( 1 ) 上樓梯時的禮儀是，應讓女士與尊長 (1)走在前面 (2)走在後面 (3)走在中間 (4)前後隨意。
+3.( 3 ) 遇有訪客，奉茶水時 (1)請其自行取用 (2)杯中茶水倒滿 (3)杯中倒七～八分滿的茶水 (4)杯中茶水五分滿。
+4.( 4 ) 美容從業人員的手指甲，長度應該是 (1)0.3公分 (2)0.5公分 (3)0.8公分 (4)剪齊。
+5.( 2 ) 痤瘡（青春痘）的治療是誰的工作？ (1)美容從業人員 (2)皮膚科醫師 (3)皮膚科醫師美容從業人員均可 (4)有經驗者即可。
+6.( 4 ) 以下何者不是造成黑斑的原因？ (1)服用某些藥物 (2)使用不當的化粧品 (3)紫外線照射 (4)肝功能不良。
+7.( 3 ) 不屬於含藥化粧品的是 (1)染髮劑 (2)青春痘乳膏 (3)清潔霜 (4)漂白霜。
+8.( 3 ) 下列何者敘述錯誤？ (1)皮脂腺與青春痘有關 (2)美容師不應該為顧客換膚 (3)正常皮膚的pH值是7 (4)每日落髮的數目是50～100根左右。
+9.( 1 ) 身體沒有皮脂腺的部位是： (1)手掌 (2)背部 (3)臉部 (4)腰部。
+10.( 3 ) 皮膚所須之營養素由 (1)神經 (2)肌肉 (3)血液 (4)脂肪 供應。
+11.( 1 ) 皮膚最外層為 (1)表皮層 (2)乳頭層 (3)真皮層 (4)皮下組織。
+12.( 2 ) 角質層的細胞為 (1)圓形 (2)扁平狀 (3)柱狀 (4)纖維狀。
+13.( 3 ) 女性的曲線美是決定於 (1)表皮 (2)真皮 (3)皮下組織 (4)角質層。
+14.( 4 ) 基底層也叫做 (1)角質層 (2)顆粒層 (3)有棘層 (4)生髮層。
+15.( 4 ) 下列何者不存在真皮的網狀層中？ (1)小神經末梢 (2)血管 (3)淋巴管 (4)黑色素。
+16.( 4 ) 黑色素可以保護皮膚對抗有害的： (1)細菌 (2)壓力 (3)電流 (4)紫外線。
+17.( 4 ) 皮膚的排汗作用是由什麼系統所控制？ (1)肌肉系統 (2)循環系統 (3)呼吸系統 (4)神經系統。
+18.( 4 ) 皮膚中的血液及汗腺可調節體溫，使體溫保持在正常的 (1)攝氏10° (2)攝氏23.8° (3)攝氏65.5° (4)攝氏37°。
+19.( 3 ) 皮下組織的位置是在： (1)角質層之上 (2)表皮之上 (3)真皮之下 (4)脂肪組織之下。
+20.( 3 ) 顆粒層細胞中的顆粒是： (1)黑色素 (2)脂質 (3)角質素 (4)氣泡。
+21.( 4 ) 表皮中最年輕的細胞是在 (1)角質層 (2)透明層 (3)有棘層 (4)基底層。
+22.( 2 ) 我們的血液是： (1)弱酸性 (2)弱鹼性 (3)中性 (4)不一定。
+23.( 3 ) 「Ｔ」字部位是指額頭，鼻子及 (1)臉頰 (2)太陽穴 (3)下巴 (4)眼眶。
+24.( 3 ) 膠原纖維在下列那一層中存在 (1)表皮層 (2)基底層 (3)網狀層 (4)乳頭層。
+25.( 1 ) 皮膚的pH值在4～6時，皮膚屬於 (1)弱酸性 (2)弱鹼性 (3)酸性 (4)鹼性。
+26.( 2 ) 敏感皮膚的特徵： (1)易長黑斑、面皰 (2)易呈現小紅點、發癢 (3)油分多、水分少 (4)油分少、水分多。
+27.( 1 ) 表皮內有： (1)基底層 (2)彈性纖維 (3)豎毛肌 (4)脂肪層。
+28.( 3 ) 表皮的最外層是？ (1)透明層 (2)顆粒層 (3)角質層 (4)基底層。
+29.( 2 ) 表皮層中其細胞會不斷剝落、遞補的是： (1)透明層 (2)角質層 (3)顆粒層 (4)有棘層。
+30.( 3 ) 人體之最大器官是 (1)心臟 (2)肺臟 (3)皮膚 (4)胃。
+31.( 2 ) 內部含有血管、神經、汗腺、皮脂腺等構造的是： (1)表皮層 (2)真皮層 (3)皮下組織 (4)基底層。
+32.( 3 ) 人體熱量有80％靠 (1)肺 (2)鼻子 (3)皮膚 (4)唇 來發散，以調節體溫。
+33.( 4 ) 表皮層中最新的細胞是產生在 (1)角質層 (2)顆粒層 (3)有棘層 (4)基底層。
+34.( 3 ) 體溫經常保持恆定，是因皮膚的那一項功能？ (1)保護作用 (2)分泌作用 (3)調節體溫作用 (4)吸收作用。
+35.( 3 ) Ｔ型區域易出油、毛孔粗大，但雙頰呈乾燥現象的是 (1)乾性皮膚 (2)油性皮膚 (3)混合性皮膚 (4)敏感性皮膚。
+36.( 3 ) 角質層中水分的含量在 (1)50％～60％ (2)5％～10％ (3)10％～20％ (4)70％～80％ 最理想。
+37.( 2 ) 多汗症是由於 (1)大汗腺 (2)小汗腺 (3)皮脂腺 (4)頂漿腺 分泌過量所致。
+38.( 1 ) 皮膚能將外界刺激傳遞到大腦，是因皮膚有： (1)神經 (2)血管 (3)肌肉 (4)脂肪。
+39.( 4 ) 皮膚能行呼吸作用，其呼吸量與肺相較約為肺之： (1)80％ (2)50％ (3)10％ (4)1％。
+40.( 1 ) 皮膚表面呈現許多細而凹凸不平的紋路，其凹處稱為 (1)皮溝 (2)皮丘 (3)汗孔 (4)毛囊。
+41.( 3 ) 下列部位中，何者的皮脂腺分泌最豐富？ (1)手掌 (2)腳掌 (3)額頭 (4)臉頰。
+42.( 3 ) 表皮細胞在那一層開始蛻變出角質物質： (1)基底層 (2)有棘層 (3)顆粒層 (4)角質層。
+43.( 3 ) 賦予皮膚彈力和張力的是： (1)平滑肌纖維 (2)乳頭層纖維 (3)彈性纖維 (4)皮下組織。
+44.( 2 ) 角質層是表皮的最外層，它是一種： (1)有核的細胞 (2)無核的死細胞 (3)新生的細胞 (4)健康的細胞。
+45.( 3 ) 青春痘通常與青春期的 (1)汗腺 (2)淋巴液 (3)性荷爾蒙 (4)血液 分泌量變化有關。
+46.( 2 ) 透明層是由何種細胞構成？ (1)有核細胞 (2)無核細胞 (3)半核細胞 (4)核心細胞。
+47.( 3 ) 皮膚由外而內依次分為那三大部份？ (1)真皮→皮下組織→表皮 (2)皮下組織→表皮→真皮 (3)表皮→真皮→皮下組織 (4)真皮→表皮→皮下組織。
+48.( 2 ) 表皮本身沒有血管，故其營養依靠 (1)細胞 (2)真皮的血液 (3)肌肉 (4)皮脂腺 供給。
+49.( 2 ) 影響皮膚性質的主要因素是 (1)胸腺 (2)皮脂腺 (3)毛細血管 (4)淋巴腺。
+50.( 1 ) 開口於毛囊，存在腋下及陰部處，分泌物含蛋白質，經氧化易產生體臭的是： (1)大汗腺 (2)小汗腺 (3)皮脂腺 (4)淋巴腺。
+51.( 2 ) 皮脂分泌最旺盛的年齡約： (1)10～12歲 (2)15～20歲 (3)20～25歲 (4)25～30歲。
+52.( 1 ) 下列何者是皮膚老化的現象之一： (1)皮膚乾燥 (2)有光澤 (3)油脂分泌多 (4)有彈性。
+53.( 1 ) 皮膚之所以能調節體溫，主要是因為： (1)汗腺 (2)皮脂腺 (3)血液 (4)淋巴腺 的排泄作用。
+54.( 1 ) 天然保濕因子（N.M.F）係皮膚那一層的產物？ (1)角質層 (2)顆粒層 (3)有棘層 (4)基底層。
+55.( 4 ) 表皮中最厚的一層，且有淋巴液流通者為： (1)角質層 (2)透明層 (3)基底層 (4)有棘層。
+56.( 2 ) (1)有棘層 (2)透明層 (3)顆粒層 (4)基底層 是一種無核細胞，分佈在手掌、足蹠。
+57.( 1 ) 皮膚有體溫調節的作用，受熱時血管會： (1)擴張 (2)收縮 (3)散發 (4)分泌。
+58.( 4 ) 血管、淋巴管分佈於 (1)角質層 (2)表皮層 (3)基底層 (4)真皮層。
+59.( 1 ) 皮膚的表面覆蓋著一層膜，稱為皮脂膜，它是由： (1)汗液、皮脂 (2)真皮、表皮 (3)汗水、污垢 (4)纖維、皮脂 混合而成。
+60.( 3 ) 在大氣中被臭氧層吸收，未達地面而對皮膚影響不大的光線是 (1)紫外線A (2)紫外線B (3)紫外線C (4)紅外線。
+61.( 4 ) 正常皮膚由表皮基底層不斷上推，呈角質化後剝離，需費時 (1)七天 (2)十四天 (3)二十一天 (4)二十八天。
+62.( 2 ) 表皮可分為五層，由外至內依次可分為： (1)角質層、顆粒層、透明層、有棘層、基底層 (2)角質層、透明層、顆粒層、有棘層、基底層 (3)角質層、透明層、有棘層、顆粒層、基底層 (4)角質層、顆粒層、有棘層、透明層、基底層。
+63.( 2 ) 皮膚的光澤度，與下列何者有關： (1)顆粒層所含的油脂 (2)角質層所含的水份 (3)有棘層所含的水份 (4)基底層所含的油脂。
+64.( 1 ) 每蒸發一公升的汗所散發的體熱約為 (1)540 (2)640 (3)740 (4)840 仟卡路里（kcal）。
+65.( 1 ) 指甲平均每天長出 (1)0.1 mm (2)0.01 mm (3)0.1 cm (4)1 mm。
+66.( 4 ) 真皮的功用為 (1)產生黑色素 (2)防止電解質流失 (3)調節體溫 (4)供給表皮營養。
+67.( 1 ) 癢覺的皮膚接受器是 (1)神經末梢 (2)毛囊 (3)皮脂腺 (4)小汗腺。
+68.( 1 ) 正常皮膚中黑色素細胞和基底細胞的比率大約為： (1)1：10 (2)1：20 (3)1：30 (4)1：40。
+69.( 3 ) 一般成年人全身的皮膚重量約佔體重的 (1)5％ (2)10％ (3)15％ (4)20％。
+70.( 3 ) 真皮的厚度約為： (1)0.1～1毫米 (2)0.2～2毫米 (3)0.3～3毫米 (4)0.4～4毫米。
+71.( 4 ) 傷口的癒合，需依賴下列何種細胞的增殖來達成： (1)組織球 (2)單核球 (3)脂肪細胞 (4)纖維母細胞。
+72.( 3 ) 乳腺是一種變型的 (1)皮脂腺 (2)小汗腺 (3)頂漿腺 (4)腎上腺。
+73.( 3 ) 支配豎毛肌機能的是： (1)感覺神經 (2)中樞神經 (3)自主神經 (4)腦幹。
+74.( 1 ) 皮膚主要的化學屏障為： (1)角質層的游離脂肪 (2)基底層和汗液 (3)顆粒層和皮脂膜 (4)有棘層和黑色素。
+75.( 1 ) 就滲透性而言，下列何種動物皮膚與人類皮膚較相似？ (1)豬 (2)牛 (3)馬 (4)羊。
+76.( 3 ) 要保持皮膚清潔，洗澡、洗臉時應使用 (1)牛奶 (2)茶葉水 (3)溫水 (4)果菜汁。
+77.( 1 ) 下列何種維生素缺乏時，皮脂和汗水的分泌也會衰退： (1)維生素A (2)維生素B (3)維生素C (4)維生素D。
+78.( 3 ) 與皮膚的氧化還原有密切關係的是 (1)維生素A (2)維生素B (3)維生素C (4)維生素D。
+79.( 4 ) 皮膚經紫外線照射，皮脂的成份會製造出 (1)維生素A (2)維生素B (3)維生素C (4)維生素D。
+80.( 1 ) 存在於腋下大汗腺上，使其產生特殊氣味的大多是： (1)革蘭氏陽性菌 (2)革蘭氏陰性菌 (3)皮黴菌 (4)寄生蟲。
+81.( 2 ) 錯誤的敘述是 (1)每根毛髮的生長期約2～6年 (2)毛髮的退化期很短是1～2年 (3)睫毛眉毛的生長期和休止期大致等長約為5～6個月 (4)一般人的毛髮總數大約十萬根。
+82.( 3 ) 所謂多孔性是頭髮吸收下列何者的能力 (1)角質素 (2)陽光 (3)水份 (4)紫外線。
+83.( 2 ) 過濾空氣中的小塵埃是 (1)粗鼻毛 (2)纖毛 (3)鼻黏膜 (4)微血管。
+84.( 3 ) 鼻子下到上唇中央凹陷的溝稱為 (1)鼻翼 (2)鼻尖 (3)人中 (4)下巴。
+85.( 1 ) 封閉原生質，有選擇性讓物質進出細胞的能力是 (1)細胞膜 (2)細胞核 (3)細胞液 (4)細胞質。
+86.( 3 ) 人體內最小的細胞是 (1)肝細胞 (2)卵細胞 (3)紅血球 (4)白血球。
+87.( 1 ) 身上沒有皮脂腺的地方是 (1)手掌 (2)眼皮 (3)鼻翼 (4)臉頰。
+88.( 4 ) 皮膚進行有絲分裂是在 (1)角質層 (2)顆粒層 (3)棘狀層 (4)基底層。
+89.( 4 ) 表皮細胞因摩擦而不斷剝落，具有防水防曬功能的是 (1)顆粒層 (2)棘狀層 (3)透明層 (4)角質層。
+90.( 4 ) 作為血液與組織間氣體及物質交換場所是 (1)動脈 (2)靜脈 (3)心房 (4)微血管。
+91.( 4 ) 構成人體的是 (1)細胞 (2)細胞、組織 (3)細胞、組織、器官 (4)細胞、組織、器官、系統。
+92.( 4 ) 下面那一項不是皮膚的附屬品 (1)指甲 (2)毛髮 (3)趾甲 (4)微血管。
+93.( 2 ) 皮脂腺分佈最多的是 (1)手掌 (2)臉部 (3)腳底 (4)關節。
+94.( 3 ) 皮膚上汗腺的小開孔稱為 (1)毛囊 (2)微血管 (3)毛孔 (4)毛孔頭。
+95.( 1 ) 最厚的皮膚是在 (1)手掌 (2)兩額 (3)前額 (4)下額。
+96.( 2 ) 最薄的皮膚是在 (1)眉毛 (2)眼皮 (3)前額 (4)手背。
+97.( 4 ) 皮膚組織中沒有血管分佈的是 (1)真皮 (2)上皮 (3)皮下組織 (4)表皮。
+98.( 1 ) 具有關節囊的結締組織，內含液體而可減少關節活動磨擦的是 (1)可動關節 (2)稍微動關節 (3)不可動關節 (4)完全不可動關節。
+99.( 3 ) 大腿由稍息回到立正姿勢的動作為 (1)旋前運動 (2)旋後運動 (3)內收運動 (4)外展運動。
+100.( 3 ) 人體的肋骨共有 (1)10對 (2)11對 (3)12對 (4)13對。
+101.( 3 ) 脊椎骨之間的軟骨稱為 (1)頂骨 (2)篩骨 (3)椎間盤 (4)椎小骨。
+102.( 2 ) 手腕可作側屈之動作是屬於 (1)車軸關節 (2)橢圓關節 (3)鞍關節 (4)杵臼關節。
+103.( 1 ) 屬於不規則骨的是 (1)脊椎骨 (2)小腿骨 (3)手指骨 (4)骨骼。
+104.( 2 ) 構成胸廓的是 (1)胸骨、腰骨、胸椎 (2)胸骨、肋骨、胸椎 (3)頸椎、胸椎、腰椎 (4)頸椎、腰椎、腰骨。
+105.( 3 ) 骨骼構造中具有造血功能的是 (1)骨膜 (2)骨端 (3)骨髓 (4)骨幹。
+106.( 2 ) 顏面骨之中唯一可動的骨是 (1)上頷骨 (2)下頷骨 (3)淚骨 (4)顴骨。
+107.( 1 ) 可受意志控制的肌肉是 (1)骨骼肌 (2)心肌 (3)平滑肌 (4)肌束。
+108.( 2 ) 肌肉的中央部份膨大，而二端漸細，其中央部分稱為 (1)肌頭 (2)肌腹 (3)肌腱 (4)肌尾。
+109.( 4 ) 肱二頭肌的收縮可使手臂彎曲，而使其產生拮抗作用的是 (1)伸指長肌 (2)收縮長肌 (3)三角肌 (4)肱三頭肌。
+110.( 4 ) 肌肉收縮所需的能量乃直接來自 (1)磷酸肌酸 (2)肝醣 (3)乳酸 (4)腺嘌呤核苷三磷酸（ATP）。
+111.( 3 ) 肌肉疲勞是 (1)鹽酸 (2)磷酸 (3)乳酸 (4)脂肪酸 儲存的結果。
+112.( 3 ) (1)內臟肌 (2)骨骼肌 (3)心肌 (4)平滑肌 不會感到疲勞可以長時間工作。
+113.( 3 ) 肌肉在神經麻醉後無須刺激仍能有規律跳動稱為 (1)全能運動 (2)無氧運動 (3)自律運動 (4)無能運動。
+114.( 2 ) 供應人體後腦血液的動脈是 (1)後耳動脈 (2)枕動脈 (3)顳淺動脈 (4)顏面動脈。
+115.( 3 ) (1)A型 (2)B型 (3)AB型 (4)O型 血型者，是全能受血者。
+116.( 1 ) 由左心室輸出充氧血而供給氧氣至全身細胞的是 (1)大循環 (2)小循環 (3)肺循環 (4)門脈循環。
+117.( 2 ) 正常成年人的心跳次數，在休息狀態時每分鐘為 (1)40～60 (2)60～80 (3)80～100 (4)100～120 次。
+118.( 3 ) 一個人血壓測得為 120 mmHg / 80 mmHg 時，其收縮壓為 (1)80 (2)100 (3)120 (4)140 mmHg。
+119.( 1 ) 可產生抗體蛋白以保護身體免疫功能的是 (1)淋巴球 (2)紅血球 (3)血小板 (4)血餅。
+120.( 4 ) 帶有A、B抗原之血液是 (1)A型 (2)B型 (3)O型 (4)AB型。
+121.( 4 ) 心跳受 (1)鉀 (2)鈉 (3)磷 (4)鈣 的影響會加速。
+122.( 3 ) 容易引起心臟病的食物是 (1)醣類 (2)蛋白質 (3)飽和脂肪 (4)不飽和脂肪。
+123.( 4 ) 衰老的紅血球會在 (1)肝臟 (2)心臟 (3)肺臟 (4)脾臟 破壞分解。
+124.( 4 ) 心跳不受哪項因素的影響？ (1)自主神經 (2)交感神經 (3)副交感神經 (4)運動神經。
+125.( 1 ) 一般人以 (1)嬰兒 (2)年輕人 (3)中年人 (4)老年人 的心跳次數最高。
+126.( 2 ) 血液的運輸中，由全身細胞送到肺的物質是 (1)氧 (2)二氧化碳 (3)鈣 (4)水。
+127.( 1 ) 尿主要由 (1)腎臟 (2)肝臟 (3)皮膚 (4)大腸 排泄。
+128.( 2 ) 「尿失禁」是大腦對 (1)內括約肌 (2)外括約肌 (3)膀胱 (4)腎小管 的控制力喪失。
+129.( 1 ) 尿液形成的第一步是 (1)過濾作用 (2)再吸收作用 (3)分泌作用 (4)濃縮作用。
+130.( 3 ) 負責肢體肌肉平衡與調節各部肌肉運動的中樞為 (1)大腦 (2)中腦 (3)小腦 (4)延腦。
+131.( 1 ) 運動神經的傳遞路線是 (1)由內而外 (2)由外而內 (3)由左而右 (4)由右而左。
+132.( 1 ) 會引起「雞皮疙瘩」的是 (1)交感神經 (2)副交感神經 (3)顏面神經 (4)迷走神經。
+133.( 4 ) 汗腺廣佈於全身，唯一不存在於下列那一部份？ (1)手掌 (2)腳底 (3)腋下 (4)唇部。
+134.( 2 ) 人類頭髮的粗硬、細軟決定在 (1)表皮層 (2)皮質層 (3)髓質層 (4)毛乳頭。
+135.( 3 ) 捲曲型頭髮在顯微鏡下觀察外形幾乎是 (1)圓形 (2)橢圓形 (3)扁平形 (4)三角形。
+136.( 3 ) 頭髮的表皮層是由髮根處向髮梢圍著毛髮的四周約 (1)1～2層 (2)3～5層 (3)7～9層 (4)15～20層 如鱗片般順次重疊。
+137.( 1 ) 毛髮的鱗片張口重疊方向應是 (1)髮根朝髮尾 (2)髮尾朝髮根 (3)髮根無開口 (4)髮尾任意重疊。
+138.( 1 ) 毛髮中的蛋白質由胺基酸構成，而胺基酸是由 (1)碳、氫、氮、氧、硫 (2)碳、氮、磷、氧、硫 (3)碳、氫、氧、鐵、硫 (4)氫、氧、鈷、鋅、硫 構成。
+139.( 2 ) 頭髮露出表皮可見的部份稱為 (1)髮根 (2)髮幹 (3)髮骨 (4)毛囊。
+140.( 1 ) 頭髮的顏色由下列幾種色素決定 (1)黑、褐、紅、黃 (2)黑、紅、黃 (3)黑、橘、白 (4)黑、橘、紅、黃。
+141.( 2 ) 頭髮的表皮層是一種 (1)透明狀 (2)半透明狀 (3)不透明狀 (4)黑色狀。
+142.( 3 ) 直髮的頭髮結構，其橫斷面為 (1)方形 (2)橢圓形 (3)圓形 (4)扁形。
+143.( 1 ) 頭髮的營養來自於頭髮的毛乳頭，因為它含有 (1)血管 (2)肌肉 (3)腺體 (4)脂肪 組織。
+144.( 1 ) 沒有起毛肌的毛髮是 (1)眉毛 (2)頭髮 (3)手部的毛髮 (4)腳部的毛髮。
+145.( 3 ) 用水噴濕頭髮時、吸濕性良好的是屬 (1)中性髮 (2)油性髮 (3)乾燥髮 (4)混合性髮。
+146.( 3 ) 有「毛髮之母」之稱的是 (1)毛幹 (2)毛根 (3)毛乳頭 (4)根鞘。
+147.( 4 ) 毛髮的主要成份是 (1)碳水化合物 (2)脂肪 (3)重金屬 (4)蛋白質。
+148.( 3 ) 淡色的毛髮含有較少的 (1)氧 (2)硫 (3)碳 (4)鋅。
+149.( 3 ) 組成毛髮髓質的是 (1)鱗狀細胞 (2)棘狀細胞 (3)立方細胞 (4)顆粒細胞。
+150.( 2 ) 毛髮皮質層的細胞內角蛋白屬於 (1)「油」型 (2)「硬」型 (3)「軟」型 (4)「中」型。
+151.( 1 ) 毛髮的角質蛋白含有 (1)硫 (2)鐵 (3)銅 (4)鋅。
+152.( 3 ) 在於兩頰的毛髮是 (1)短毛髮 (2)長毛髮 (3)纖毛髮 (4)絨毛。
+153.( 2 ) 毛髮的伸縮特性主要依靠 (1)髓質 (2)皮質 (3)毛乳頭 (4)毛根。
+154.( 4 ) 毛髮的橫切面構造是 (1)像是一根吸管，中間空的 (2)像是一根實心的棒子，心外組織相同 (3)分為五層：髓質、皮質、棘層、顆粒層及角質層 (4)分為三部份：髓質、皮質及表皮。
+155.( 1 ) 毛髮上色素粒子在 (1)皮質層 (2)髓質層 (3)毛表皮層 (4)毛根。
+156.( 2 ) 毛髮組織由毛母細胞延長所形成的纖維狀物構成 (1)表皮層 (2)皮質層 (3)髓質層 (4)皮下層。
+157.( 2 ) 毛髮的組成主要是 (1)軟蛋白質 (2)角蛋白質 (3)鈣質 (4)磷質。
+158.( 2 ) 頭髮本身所帶的電荷為 (1)陽離子 (2)陰離子 (3)正負都有 (4)正負都沒。
+159.( 3 ) 頭髮的成份蛋白質佔頭髮的百分比 (1)57% (2)67% (3)97% (4)37%。
+160.( 1 ) 長時間的曝曬於強烈日光中，毛髮中的角蛋白質一部份會被 (1)紫外線 (2)紅外線 (3)灰塵 (4)X光線 破壞。
+161.( 3 ) 所謂頭髮的張力是指頭髮拉到極限而不致斷裂的力量，健康的毛髮約可承受 (1)0～30公克 (2)30～60公克 (3)120～180公克 (4)300公克以上。
+162.( 4 ) 頭髮濕潤之後，可被拉長比原長度多 (1)10～20% (2)20～30% (3)30～40% (4)40～50%。
+163.( 2 ) 亞洲人一根毛髮可支撐的拉力約 (1)0～50公克 (2)100～150公克 (3)200～250公克 (4)300～350公克。
+164.( 2 ) 一般人的毛髮總數大約 (1)5萬根 (2)10萬根 (3)15萬根 (4)20萬根。
+165.( 3 ) 選出錯誤的觀念 (1)正常健康的頭髮吸水性較差 (2)毛髮能吸收水份 (3)毛髮上面也有神經，所以有感覺 (4)毛髮有彈性和張力。
+166.( 3 ) 含有血液和神經，以提供頭髮的成長和再生是 (1)毛囊 (2)油脂腺 (3)毛乳頭 (4)毛表皮。
+167.( 1 ) 毛髮是嬰兒在母親腹中 (1)3個月 (2)5個月 (3)7個月 (4)出生時 即開始生長。
+168.( 2 ) 一般而言，停止生長的頭髮約佔頭髮總數的 (1)50% (2)15% (3)70% (4)3%。
+169.( 2 ) 一般頭髮生命週期為 (1)2～6月 (2)2～6年 (3)8～10月 (4)8～10年。
+170.( 4 ) 毛髮完全脫離毛乳頭是屬於 (1)生長期 (2)活躍期 (3)退化期 (4)休止期。
+171.( 3 ) 毛髮生長速率平均每天約 (1)0.1～0.2毫米 (2)0.2～0.5毫米 (3)0.5～0.8毫米 (4)0.8～1.0毫米。
+172.( 3 ) 下列何者有抑制頭髮生長的作用 (1)女性荷爾蒙 (2)維生素C (3)男性荷爾蒙 (4)酸性潤髮劑。
+173.( 1 ) 退化期的頭髮約佔頭髮總量的 (1)1% (2)5% (3)10% (4)20%。
+174.( 4 ) 正常人的頭髮約多少比例處於生長期？ (1)百分之十 (2)百分之三十 (3)百分之六十 (4)百分之九十。
+175.( 3 ) 男性荷爾蒙會 (1)刺激體毛和頭髮的生長 (2)抑制體毛和頭髮的生長 (3)刺激體毛生長抑制頭髮的生長 (4)對體毛和頭髮沒有影響。
+176.( 3 ) 每個人的頭髮因新陳代謝的關係會掉髮，通常每天約掉 (1)10～20根 (2)20～30根 (3)50～100根 (4)100～200根 是正常的。
+177.( 3 ) 波狀髮的橫切面呈 (1)圓型 (2)扁平 (3)橢圓型 (4)三角型。
+178.( 3 ) 一平方公分頭髮有220～240根髮量是屬於 (1)低密度 (2)中密度 (3)高密度 (4)超高密度。
+179.( 4 ) 捲毛型毛髮的外型是扁平，其毛囊在皮膚內呈 (1)直立狀 (2)歪斜狀 (3)微彎曲狀 (4)彎曲狀。
+180.( 2 ) 正常乾燥頭髮可伸展至 (1)原來長度的一半 (2)原來長度的五分之一 (3)原來長度的四分之三 (4)原來長度的兩倍。
+181.( 3 ) 頭髮的髮色、強度及髮質主要原因為 (1)飲食 (2)生活習慣 (3)遺傳 (4)心情。
+182.( 2 ) 要使梳頭順暢，梳頭時應 (1)用力梳刷 (2)由髮根向髮梢梳 (3)由髮梢向髮根梳 (4)用冷風邊梳邊吹。
+183.( 2 ) 在濕熱的狀態下，溫度達到幾度時，毛髮的角質蛋白就開始變化 (1)45℃ (2)55℃ (3)70℃ (4)100℃。
+184.( 4 ) 使乾髮會變得脆弱、易斷的溫度是 (1)60℃ (2)80℃ (3)100℃ (4)160℃。
+185.( 4 ) 不會造成頭髮分叉的原因是 (1)紫外線曝曬 (2)吹髮時過熱 (3)燙髮液的傷害 (4)髮油、髮蠟的傷害。
+186.( 3 ) 吹直髮型時使用 (1)尖尾梳 (2)包頭梳 (3)九排梳 (4)剪髮梳。
+187.( 2 ) 梳理前額線條髮型時採用 (1)九排梳 (2)排骨梳 (3)包頭梳 (4)剪髮梳。
+188.( 4 ) 一般梳子材質可用 (1)玻璃 (2)橡皮 (3)錫 (4)硬塑膠 來製造。
+189.( 4 ) 吹風時較不易吹出層次、線條的髮梳是 (1)九排梳 (2)排骨梳 (3)圓梳 (4)S彎梳。
+190.( 3 ) 剪髮時可同時剪去長度及薄度的是 (1)手推剪 (2)剪刀 (3)削刀 (4)電剪。
+191.( 2 ) 較適合嚴重受損髮質使用的染髮劑是 (1)金屬性 (2)護髮性 (3)半永久性 (4)永久性。
+192.( 1 ) 染髮用圍巾宜選用 (1)深色 (2)淺色 (3)花色 (4)白色。
+193.( 3 ) 整髮時不適於烘乾頭髮的機具是 (1)大吹風機 (2)吹風機 (3)蒸氣機 (4)手提罩燈。
+194.( 4 ) 整髮時不適於固定髮捲的是 (1)髮夾 (2)小單夾 (3)U型夾 (4)鯊魚夾。
+195.( 1 ) 整髮烘乾前為固定捲子位置應圍上 (1)髮網 (2)塑膠帽 (3)毛巾 (4)保鮮膜。
+196.( 1 ) 使用手持式吹風機時，最適宜與頭髮的距離為 (1)5至10公分 (2)10至20公分 (3)20至30公分 (4)30公分以下。
+197.( 2 ) 我國的吹風機所採用電壓為 (1)100V (2)110V (3)200V (4)220V。
+198.( 1 ) 冷燙還原劑之乙硫醇酸在水溶液中極易氧化、分解，故貯藏時除應避免與空氣接觸外且必須加 (1)安定劑 (2)催化劑 (3)氧化劑 (4)還原劑。
+199.( 1 ) 髮油的原料 (1)植物油、礦物油、動物油 (2)植物油、沙拉油、動物油 (3)乳質油、植物油、動物油 (4)汽油、植物油、礦物油。
+200.( 4 ) 吹風造型前須將瓶罐搖動均勻後，擠壓出泡沫的美髮用品是 (1)髮麗香 (2)洗髮精 (3)髮膠 (4)慕絲。`;
+
+let questionBank = [];
+
+// 解析函數
+function parseQuestions() {
+    const lines = rawData.trim().split('\n');
+    const keyMap = {'1': 'A', '2': 'B', '3': 'C', '4': 'D'};
+    
+    // 正則表達式捕捉 題號、答案、題目、及四個選項
+    const regex = /^(\d+)\.\(\s*([1-4])\s*\)\s*(.+?)\s*\(1\)(.+?)\s*\(2\)(.+?)\s*\(3\)(.+?)\s*\(4\)(.+?)$/;
+    
+    lines.forEach(line => {
+        let match = line.match(regex);
+        if (match) {
+            questionBank.push({
+                id: parseInt(match[1]),
+                question: match[3].trim(),
+                options: {
+                    A: match[4].trim(),
+                    B: match[5].trim(),
+                    C: match[6].trim(),
+                    D: match[7].trim()
+                },
+                answer: keyMap[match[2]]
+            });
+        }
+    });
+}
+parseQuestions();
+
+// =================================================
+
+// 全局狀態控制
+let currentRange = 1; 
+let currentMode = 'practice'; // 'practice' | 'exam'
+let userAnswers = {}; 
+let timerInterval = null;
+let secondsElapsed = 0;
+
+window.onload = function() { renderQuiz(); };
+
+// ===== 控制面板功能 =====
+function changeRange(range) {
+    currentRange = range;
+    userAnswers = {};
+    document.querySelectorAll('#rangeBtns .btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx + 1 === range);
+    });
+    if (currentMode === 'exam') resetTimer();
+    renderQuiz();
+}
+
+function changeMode(mode) {
+    currentMode = mode;
+    userAnswers = {};
+
+    document.querySelectorAll('#modeBtns .btn').forEach((btn) => {
+        btn.classList.remove('active');
+        if (mode === 'practice' && btn.innerText.includes('練習')) btn.classList.add('active');
+        if (mode === 'exam' && btn.innerText.includes('考試')) btn.classList.add('active');
+    });
+
+    const timerBox = document.getElementById('timerBox');
+    const actionBar = document.getElementById('actionBar');
+
+    if (mode === 'exam') {
+        timerBox.style.display = 'inline-block';
+        actionBar.style.display = 'block';
+        startTimer();
+    } else {
+        timerBox.style.display = 'none';
+        actionBar.style.display = 'none';
+        stopTimer();
+    }
+    renderQuiz();
+}
+
+// ===== 核心渲染功能 =====
+function getCurrentQuestions() {
+    const startIdx = (currentRange - 1) * 50;
+    return questionBank.slice(startIdx, startIdx + 50);
+}
+
+function renderQuiz() {
+    const questions = getCurrentQuestions();
+    const container = document.getElementById('quizContainer');
+    const navGrid = document.getElementById('navGrid');
+    
+    container.innerHTML = '';
+    navGrid.innerHTML = '';
+
+    questions.forEach((q, index) => {
+        const qNumber = q.id;
+        const userAnswer = userAnswers[q.id];
+
+        // 1. 建立導覽按鈕
+        const navBtn = document.createElement('button');
+        navBtn.className = 'nav-btn';
+        navBtn.innerText = qNumber;
+        if (userAnswer) {
+            if (currentMode === 'practice') navBtn.classList.add(userAnswer === q.answer ? 'correct' : 'wrong');
+            else navBtn.classList.add('answered');
+        }
+        navBtn.onclick = () => document.getElementById(`q_card_${q.id}`).scrollIntoView({ behavior: 'smooth' });
+        navGrid.appendChild(navBtn);
+
+        // 2. 建立題目卡片
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.id = `q_card_${q.id}`;
+
+        let optionsHTML = '';
+        for (const [key, val] of Object.entries(q.options)) {
+            let optionClass = 'option-item';
+            if (userAnswer) {
+                if (currentMode === 'practice') {
+                    if (key === q.answer) optionClass += ' correct';
+                    else if (key === userAnswer) optionClass += ' wrong';
+                } else {
+                    if (key === userAnswer) optionClass += ' selected';
+                }
+            }
+            optionsHTML += `<div class="${optionClass}" onclick="selectOption(${q.id}, '${key}')"><strong>(${key})</strong> ${val}</div>`;
+        }
+
+        card.innerHTML = `
+            <div class="question-title">${qNumber}. ${q.question}</div>
+            <div class="options-list">${optionsHTML}</div>
+        `;
+        
+        container.appendChild(card);
+    });
+}
+
+function selectOption(qId, selectedKey) {
+    if (currentMode === 'practice' && userAnswers[qId]) return; 
+    userAnswers[qId] = selectedKey;
+    renderQuiz();
+}
+
+// ===== 計時與結算 =====
+function startTimer() { stopTimer(); secondsElapsed = 0; updateTimerDisplay(); timerInterval = setInterval(() => { secondsElapsed++; updateTimerDisplay(); }, 1000); }
+function stopTimer() { if (timerInterval) clearInterval(timerInterval); }
+function resetTimer() { stopTimer(); startTimer(); }
+function updateTimerDisplay() {
+    document.getElementById('timerText').innerText = `${String(Math.floor(secondsElapsed / 60)).padStart(2, '0')}:${String(secondsElapsed % 60).padStart(2, '0')}`;
+}
+
+function submitExam() {
+    stopTimer();
+    const questions = getCurrentQuestions();
+    let correctCount = 0;
+    questions.forEach(q => { if (userAnswers[q.id] === q.answer) correctCount++; });
+    
+    // 每題2分 (每區50題，滿分100分)
+    document.getElementById('modalScore').innerText = `${correctCount * 2} 分`;
+    document.getElementById('modalDetail').innerHTML = `
+        答對：${correctCount} 題 | 答錯：${50 - correctCount} 題<br>
+        答題時間：${String(Math.floor(secondsElapsed / 60)).padStart(2, '0')} 分 ${String(secondsElapsed % 60).padStart(2, '0')} 秒`;
+    document.getElementById('scoreModal').style.display = 'flex';
+}
+
+function closeModal() { document.getElementById('scoreModal').style.display = 'none'; }
+</script>
+
+</body>
+</html>
