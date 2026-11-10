@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鉗工基礎工作組 競賽題庫線上練習與測驗系統</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --edit-color: #8b5cf6;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: #64748b;
+        }
+
+        /* 檔案操作按鈕區 */
+        .file-actions {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .file-btn {
+            background: #f1f5f9;
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .file-btn:hover {
+            background: #e2e8f0;
+        }
+
+        /* 控制面板 */
+        .control-panel {
+            background: var(--card-bg);
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: #f1f5f9;
+            color: var(--text-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #e2e8f0;
+        }
+
+        .btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .btn.active-edit {
+            background: var(--edit-color);
+            color: white;
+            border-color: var(--edit-color);
+        }
+
+        .timer-box {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #d97706;
+            background: #fef3c7;
+            padding: 6px 14px;
+            border-radius: 20px;
+            display: none;
+        }
+
+        /* 題目導覽網格 */
+        .nav-grid {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .nav-btn {
+            padding: 6px 0;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: #ffffff;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .nav-btn.answered { background: #dbeafe; border-color: #93c5fd; color: #1e40af; }
+        .nav-btn.correct { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
+        .nav-btn.wrong { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+
+        /* 題目卡片 */
+        .question-card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .question-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #0f172a;
+        }
+
+        .question-image {
+            max-width: 100%;
+            max-height: 300px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: block;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-item {
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .option-item:hover { border-color: #94a3b8; background: #f8fafc; }
+        .option-item.selected { border-color: var(--primary-color); background: #eff6ff; }
+        .option-item.correct { border-color: var(--success-color); background: #ecfdf5; color: #065f46; font-weight: 600; }
+        .option-item.wrong { border-color: var(--danger-color); background: #fef2f2; color: #991b1b; }
+
+        /* 編輯模式 UI */
+        .edit-row { margin-bottom: 12px; }
+        .edit-row label { font-weight: 600; display: block; margin-bottom: 4px; font-size: 0.9rem; }
+        .edit-input { width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; }
+        .edit-select { padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; }
+        .edit-flex { display: flex; gap: 10px; align-items: center; }
+        .remove-img-btn { background: var(--danger-color); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+
+        .action-bar { text-align: center; margin-top: 30px; }
+        .submit-btn {
+            padding: 12px 36px; font-size: 1.1rem; background: var(--success-color); color: white;
+            border: none; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+        }
+        .submit-btn:hover { background: #059669; }
+
+        /* 成績彈窗 */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content {
+            background: white; padding: 32px; border-radius: 16px; max-width: 450px;
+            width: 90%; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+        .score-display { font-size: 3rem; font-weight: 800; color: var(--primary-color); margin: 16px 0; }
+        .stat-detail { margin-bottom: 20px; color: #64748b; font-size: 1rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="file-actions">
+            <button class="file-btn" onclick="exportJSON()">💾 匯出題庫 (JSON)</button>
+            <button class="file-btn" onclick="importJSON()">📂 匯入題庫 (JSON)</button>
+        </div>
+        <h1>鉗工基礎工作組 競賽題庫練習與測驗系統</h1>
+        <div class="subtitle">學科題庫（共200題，每題2分，滿分100分）</div>
+    </header>
+
+    <!-- 控制面板：選擇分區與模式 -->
+    <div class="control-panel">
+        <div>
+            <span style="font-weight: bold; margin-right: 8px;">選擇分區：</span>
+            <div class="btn-group" id="rangeBtns">
+                <button class="btn active" onclick="changeRange(1)">第1~50題</button>
+                <button class="btn" onclick="changeRange(2)">第51~100題</button>
+                <button class="btn" onclick="changeRange(3)">第101~150題</button>
+                <button class="btn" onclick="changeRange(4)">第151~200題</button>
+            </div>
+        </div>
+
+        <div>
+            <span style="font-weight: bold; margin-right: 8px;">模式：</span>
+            <div class="btn-group" id="modeBtns">
+                <button class="btn active" onclick="changeMode('practice')">💡 練習模式</button>
+                <button class="btn" onclick="changeMode('exam')">📝 考試模式</button>
+                <button class="btn" onclick="changeMode('edit')">✏️ 編輯模式</button>
+            </div>
+        </div>
+
+        <div class="timer-box" id="timerBox">⏱️ 答題計時：<span id="timerText">00:00</span></div>
+    </div>
+
+    <!-- 題號快速跳轉導覽 -->
+    <div class="nav-grid" id="navGrid"></div>
+
+    <!-- 題目容器 -->
+    <div id="quizContainer"></div>
+
+    <!-- 考試交卷按鈕 -->
+    <div class="action-bar" id="actionBar" style="display: none;">
+        <button class="submit-btn" onclick="submitExam()">完成作答並交卷</button>
+    </div>
+</div>
+
+<!-- 考試結算彈窗 -->
+<div class="modal" id="scoreModal">
+    <div class="modal-content">
+        <h2>🎉 測驗完成！</h2>
+        <div class="score-display" id="modalScore">0 分</div>
+        <div class="stat-detail" id="modalDetail">
+            答對：0 題 | 答錯：0 題<br>
+            總作答時間：<span id="modalTime">00:00</span>
+        </div>
+        <button class="btn active" style="width: 100%; padding: 12px;" onclick="closeModal()">檢視答題狀況</button>
+    </div>
+</div>
+
+<script>
+// ==================== 題庫資料 ====================
+let questionBank = [
+    { id: 1, question: "表面符號中，在基本符號上加註的數字為", options: { A: "表面粗糙度值", B: "基準長度", C: "加工裕度", D: "切削深度" }, answer: "A" },
+    { id: 2, question: "下列線條何者不以細線繪製", options: { A: "尺度線", B: "隱藏線", C: "折斷線", D: "剖面線" }, answer: "B" },
+    { id: 3, question: "下列線條何者屬於中線", options: { A: "直線", B: "虛線", C: "中心線", D: "割面線" }, answer: "B" },
+    { id: 4, question: "依據CNS標準，球面直徑為30mm時，則標註成", options: { A: "Sf30", B: "球R15", C: "SD30", D: "SR15" }, answer: "A" },
+    { id: 5, question: "一組三角板可用來繪製的角度是", options: { A: "20°、30°、45°及75°", B: "15°、45°、60°及75°", C: "30°、50°、75°及90°", D: "45°、50°、75°及90°" }, answer: "B" },
+    { id: 6, question: "四邊形的二對角線相等且互相垂直，則此四邊形為", options: { A: "長方形", B: "正方形", C: "梯形", D: "不等邊四邊形" }, answer: "B" },
+    { id: 7, question: "繪製較長的直線，為了使線條粗細能夠一致，鉛筆最好", options: { A: "改變方向", B: "用力調整", C: "稍微轉動", D: "不變" }, answer: "C" },
+    { id: 8, question: "依據CNS標準，一般之繪圖單位為", options: { A: "m", B: "cm", C: "mm", D: "μm" }, answer: "C" },
+    { id: 9, question: "下列何者為等腰三角形之三邊", options: { A: "9、9、20", B: "7、7、10", C: "6、6、16", D: "2、2、4" }, answer: "B" },
+    { id: 10, question: "若圓的直徑是100mm，則圓上的點和圓心相距", options: { A: "200mm", B: "100mm", C: "50mm", D: "40mm" }, answer: "C" },
+	{ id: 11, question: "下列那一個是雙向公差", image: "https://i.urusai.cc/Qeq1F.png", options: { A: "f25±0.02mm", B: "f25mm", C: "f25mm", D: "f25mm" }, answer: "A" },
+    { id: 12, question: "表面符號的左邊數字0.2為", image: "https://i.urusai.cc/KMejI.png", options: { A: "表面粗糙度值", B: "加工裕度", C: "基準長度", D: "切削深度" }, answer: "B" },
+    { id: 13, question: "利用下列何式，可求得正N邊形的內角和", options: { A: "(N－2)×120°", B: "(N－2)×150°", C: "(N－2)×180°", D: "(N－2)×210°" }, answer: "C" },
+    { id: 14, question: "正六角形每一內角等於", options: { A: "60°", B: "90°", C: "120°", D: "150°" }, answer: "C" },
+    { id: 15, question: "左圖所示的投影法為_____投影法。", image: "https://i.urusai.cc/cTh6A.png", options: { A: "第四角", B: "第三角", C: "第二角", D: "第一角" }, answer: "B" },
+    { id: 16, question: "左圖所示的投影法為_____投影法。", image: "https://i.urusai.cc/EFjVl.png", options: { A: "第一角", B: "第二角", C: "第三角", D: "第四角" }, answer: "A" },
+    { id: 17, question: "工作圖中常用的三視圖是_____視圖。", options: { A: "前、右側、左側", B: "俯、前、仰", C: "俯、前、右側", D: "俯、右側、左側" }, answer: "C" },
+    { id: 18, question: "輔助視圖所依據之投影原理是", options: { A: "正投影原理", B: "斜投影原理", C: "透視投影原理", D: "立體投影原理" }, answer: "A" },
+    { id: 19, question: "閱讀工作圖的第一步驟是瞭解圖面的", options: { A: "加工法", B: "比例", C: "材料", D: "投影法" }, answer: "D" },
+    { id: 20, question: "1mm厚的方形工件，一般用幾個視圖表示", options: { A: "單視圖", B: "雙視圖", C: "三視圖", D: "四視圖" }, answer: "A" },
+    { id: 21, question: "圓柱型工件，一般用幾個視圖表示", options: { A: "六", B: "四", C: "三", D: "二" }, answer: "D" },
+    { id: 22, question: "工作圖上標註「◎」之符號為", options: { A: "位置度", B: "圓柱面", C: "真圓度", D: "同心度" }, answer: "D" },
+    { id: 23, question: "畫三視圖時，各視圖須互相對正是基於", options: { A: "美觀要求", B: "一般畫圖習慣", C: "符合投影原理", D: "線條清晰分明" }, answer: "C" },
+    { id: 24, question: "以比例1：10繪圖，若圖面長度為50mm，則實際長度應為", options: { A: "5mm", B: "50mm", C: "100mm", D: "500mm" }, answer: "D" },
+    { id: 25, question: "A0圖紙的尺寸大小為", options: { A: "841×1189mm", B: "594×841mm", C: "420×594mm", D: "297×420mm" }, answer: "A" },
+    { id: 26, question: "下列符號何者表示為真平度", image : "https://i.urusai.cc/bjdZp.png", options: { A: "⏐", B: "○", C: "▱", D: "◎" }, answer: "C" },
+    { id: 27, question: "描圖紙是一種", options: { A: "感光紙", B: "模造紙", C: "透明薄紙", D: "道林紙" }, answer: "C" },
+    { id: 28, question: "對於公差的敘述，下列何者為正確？", options: { A: "最大限界尺寸與實際尺寸的數字差", B: "最小限界尺寸與基本尺寸的數字差", C: "最大限界尺寸與最小限界尺寸的數字差", D: "實際尺寸與基本尺寸的數字差" }, answer: "C" },
+    { id: 29, question: "孔與軸在裝配時，若孔的最大限界尺寸小於軸的最小限界尺寸，則此配合屬於", options: { A: "留隙配合", B: "過渡配合", C: "過盈配合", D: "鬆動配合" }, answer: "C" },
+    { id: 30, question: "在第三角投影法中，前視圖為全剖面視圖，俯視圖為半視圖時，此半視圖應繪物體的", options: { A: "前半部", B: "後半部", C: "左半部", D: "右半部" }, answer: "B" },
+    { id: 31, question: "公制工作圖中，半徑之表示符號是", options: { A: "T", B: "R", C: "f", D: "D" }, answer: "B" },
+    { id: 32, question: "表面粗糙度值所使用的單位為", options: { A: "m", B: "cm", C: "mm", D: "μm" }, answer: "D" },
+    { id: 33, question: "物體斜面兩端高低差與長度的比值是", options: { A: "錐度", B: "斜度", C: "梯度", D: "直度" }, answer: "B" },
+    { id: 34, question: "中華民國國家標準之簡稱為", options: { A: "CSN", B: "CNS", C: "SCN", D: "NCS" }, answer: "B" },
+    { id: 35, question: "割面線之中段部分，其線型為", options: { A: "細鏈線", B: "細實線", C: "虛線", D: "粗鏈線" }, answer: "A" },
+    { id: 36, question: "依據CNS標準，應儘量使用下列何者來表示物體之形狀及尺度", options: { A: "斜視圖", B: "透視圖", C: "等角圖", D: "正投影視圖" }, answer: "D" },
+    { id: 37, question: "通常使用三角板與丁字尺配合，無法繪出的角度是", options: { A: "15°", B: "30°", C: "50°", D: "75°" }, answer: "C" },
+    { id: 38, question: "兩圓互相內切，其連心線長等於該兩圓的", options: { A: "直徑和", B: "直徑差", C: "半徑和", D: "半徑差" }, answer: "D" },
+    { id: 39, question: "在機械製圖中，一般最先繪製的線條是", options: { A: "剖面線", B: "虛線", C: "中心線", D: "尺度線" }, answer: "C" },
+    { id: 40, question: "凡是圓或圓柱體，必須繪出", options: { A: "虛線", B: "延伸線", C: "剖面線", D: "中心線" }, answer: "D" },
+    { id: 41, question: "粗實線用以表示", options: { A: "尺度線", B: "輪廓線", C: "剖面線", D: "中心線" }, answer: "B" },
+    { id: 42, question: "圖面上實線、虛線、中心線、割面線及尺度線重疊時，最優先者為", options: { A: "實線", B: "虛線", C: "中心線", D: "割面線" }, answer: "A" },
+    { id: 43, question: "要將碳鋼實施淬火前，必須將鋼料加熱至變態點溫度以上，使其產生何種組織", options: { A: "肥粒鐵", B: "麻田散鐵", C: "沃斯田鐵", D: "雪明碳鐵" }, answer: "C" },
+    { id: 44, question: "中華民國國家標準(CNS)碳鋼規格S15C代表此鋼料為", options: { A: "含碳量0.15%", B: "抗拉強度15kg/mm2", C: "含碳量1.5%", D: "含碳量15%" }, answer: "A" },
+    { id: 45, question: "鋼為鐵與碳的合金，其含碳量範圍為", options: { A: "0.02%以下", B: "0.02～2.0%", C: "0.2～2.0%", D: "2.0～4.0%" }, answer: "B" },
+    { id: 46, question: "比較生鐵、熟鐵及鋼三種金屬材料的含碳量，依多寡順序何者正確", options: { A: "鋼＞熟鐵＞生鐵", B: "鋼＞生鐵＞熟鐵", C: "熟鐵＞生鐵＞鋼", D: "生鐵＞鋼＞熟鐵" }, answer: "D" },
+    { id: 47, question: "下列何種金屬質地硬脆，不能進行軋延或鍛造加工", options: { A: "碳鋼", B: "生鐵", C: "熟鐵", D: "純鐵" }, answer: "B" },
+    { id: 48, question: "含碳量0.25%的碳鋼先加熱至沃斯田鐵狀態，再緩慢冷卻至室溫，會獲得何種組織", options: { A: "波來鐵", B: "波來鐵＋雪明碳鐵", C: "變韌鐵", D: "肥粒鐵＋波來鐵" }, answer: "D" },
+    { id: 49, question: "純鐵在室溫下所觀察到的顯微組織為", options: { A: "波來鐵", B: "沃斯田鐵", C: "肥粒鐵", D: "麻田散鐵" }, answer: "C" },
+    { id: 50, question: "下列何種金屬之導電度及導熱度較大，常用於電氣材料或散熱管", options: { A: "鐵", B: "鎂", C: "鋁", D: "銅" }, answer: "D" },
+    { id: 51, question: "加熱溫度低於A1變態點的碳鋼熱處理方法為", options: { A: "淬火", B: "完全退火", C: "回火", D: "正常化" }, answer: "C" },
+    { id: 52, question: "可用於製作銼刀、鑽頭或鏨子等刀具的材料為", options: { A: "低碳鋼", B: "中碳鋼", C: "高碳鋼", D: "鑄鐵" }, answer: "C" },
+    { id: 53, question: "下列常見的碳鋼組織中，依硬度大小順序排列為", options: { A: "麻田散鐵＞粗波來鐵＞細波來鐵＞肥粒鐵", B: "細波來鐵＞麻田散鐵＞粗波來鐵＞肥粒鐵", C: "麻田散鐵＞細波來鐵＞粗波來鐵＞肥粒鐵", D: "麻田散鐵＞粗波來鐵＞肥粒鐵＞細波來鐵" }, answer: "C" },
+    { id: 54, question: "下列何種材料延展性佳，可以拉成細絲或錘打成箔片", options: { A: "生鐵", B: "低碳鋼", C: "中碳鋼", D: "純銅" }, answer: "D" },
+    { id: 55, question: "在大氣中，下列何者的表面會自然形成薄層氧化膜而產生優良耐蝕性", options: { A: "鋁", B: "鋼", C: "生鐵", D: "熟鐵" }, answer: "A" },
+    { id: 56, question: "質輕、導熱快且易加工，較常用於製造腳踏車零件或散熱片的材料為", options: { A: "碳鋼", B: "黃銅", C: "鋁合金", D: "鑄鐵" }, answer: "C" },
+    { id: 57, question: "下列何者不是鋼料退火之主要目的", options: { A: "去除內部應力", B: "降低硬度", C: "降低延性", D: "改善切削性" }, answer: "C" },
+    { id: 58, question: "中華民國國家標準(CNS)鋼鐵符號第一部分表示", options: { A: "製品之形狀", B: "材質之英文名稱或元素符號", C: "製造方法", D: "合金元素含量" }, answer: "B" },
+    { id: 59, question: "青銅的鑄造性及耐蝕性優良，主要是在銅中加入", options: { A: "鋅", B: "鋁", C: "錫", D: "銀" }, answer: "C" },
+    { id: 60, question: "碳鋼中由肥粒鐵及雪明碳鐵所構成的層狀組織稱為", options: { A: "波來鐵", B: "麻田散鐵", C: "沃斯田鐵", D: "變韌鐵" }, answer: "A" },
+    { id: 61, question: "下列材料中，耐磨性最好的是", options: { A: "熟鐵", B: "鑄鐵", C: "鋁", D: "銅" }, answer: "B" },
+    { id: 62, question: "下列材料中，硬度最低的金屬是", options: { A: "鑄鐵", B: "鋁", C: "銅", D: "鋼" }, answer: "B" },
+    { id: 63, question: "下列何種純金屬的熔點最高", options: { A: "鋁", B: "銅", C: "鐵", D: "鎂" }, answer: "C" },
+    { id: 64, question: "下列金屬材料，導電性最好的是", options: { A: "金", B: "銀", C: "銅", D: "鐵" }, answer: "B" },
+    { id: 65, question: "下列材料中，具有較佳熔接性者為", options: { A: "鋁", B: "鑄鐵", C: "黃銅", D: "低碳鋼" }, answer: "D" },
+    { id: 66, question: "下列何者的熔點最低", options: { A: "錫", B: "鋼", C: "純鐵", D: "熟鐵" }, answer: "A" },
+    { id: 67, question: "下列何者的延展性較佳", options: { A: "高碳鋼", B: "中碳鋼", C: "低碳鋼", D: "鑄鐵" }, answer: "C" },
+    { id: 68, question: "下列金屬材料中，比重最大者為", options: { A: "鋁", B: "銅", C: "白鑄鐵", D: "熟鐵" }, answer: "B" },
+    { id: 69, question: "依我國國家標準(CNS)，金屬材料代號S45C中的S代表", options: { A: "硫", B: "碳", C: "鋼", D: "錳" }, answer: "C" },
+    { id: 70, question: "依我國國家標準(CNS)，金屬材料代號S10C代表", options: { A: "中碳鋼", B: "低碳鋼", C: "高碳鋼", D: "熟鐵" }, answer: "B" },
+    { id: 71, question: "下列何者的含碳量最高", options: { A: "S15C", B: "S20C", C: "S30C", D: "S45C" }, answer: "D" },
+    { id: 72, question: "下列何者含碳量最高", options: { A: "低碳鋼", B: "中碳鋼", C: "高碳鋼", D: "鑄鐵" }, answer: "D" },
+    { id: 73, question: "由鐵礦、焦碳與石灰石直接熔化冶鍊而成者為", options: { A: "鋼", B: "生鐵", C: "熟鐵", D: "鑄鐵" }, answer: "B" },
+    { id: 74, question: "下列金屬元素在地球上存量最多者為", options: { A: "鋁", B: "錫", C: "鈦", D: "錳" }, answer: "A" },
+    { id: 75, question: "碳鋼中含量最多的成分為", options: { A: "碳", B: "鐵", C: "錳", D: "矽" }, answer: "B" },
+    { id: 76, question: "黃銅是銅中加入", options: { A: "鉛", B: "鋅", C: "鐵", D: "錫" }, answer: "B" },
+    { id: 77, question: "古代的鼎是用_____鑄造", options: { A: "黃銅", B: "青銅", C: "鋁", D: "紅銅" }, answer: "B" },
+    { id: 78, question: "在密閉爐中將中碳鋼料加熱至約800℃，再緩慢冷卻至室溫的熱處理方法稱為", options: { A: "淬火", B: "回火", C: "退火", D: "正常化" }, answer: "C" },
+    { id: 79, question: "一般淬火會使鋼料", options: { A: "變硬且強度增加", B: "變硬且延性增加", C: "變韌且強度增加", D: "變軟且延性增加" }, answer: "A" },
+    { id: 80, question: "欲消除鋼料熱處理後的內應力，最常用的方法是", options: { A: "淬火", B: "退火", C: "回火", D: "正常化" }, answer: "C" },
+    { id: 81, question: "低溫回火的主要目的是要把工件變", options: { A: "硬", B: "軟", C: "韌", D: "脆" }, answer: "C" },
+    { id: 82, question: "游標高度規不適用於", options: { A: "劃線", B: "量測高度", C: "加裝量錶可作高度尺寸的比較", D: "測量垂直度" }, answer: "D" },
+    { id: 83, question: "下列量具何者可調整歸零", options: { A: "卡鉗", B: "鋼尺", C: "分厘卡", D: "角尺" }, answer: "C" },
+    { id: 84, question: "一般公制外分厘卡的外套筒上，每一刻度代表", options: { A: "0.1mm", B: "0.05mm", C: "0.02mm", D: "0.01mm" }, answer: "D" },
+    { id: 85, question: "一般外分厘卡可加適當量測壓力的部位是", options: { A: "卡架", B: "外套筒", C: "棘輪停止器", D: "襯筒" }, answer: "C" },
+    { id: 86, question: "外分厘卡之固定鎖的作用是限制下列何者的轉動", options: { A: "襯筒", B: "卡架", C: "主軸", D: "棘輪停止器" }, answer: "C" },
+    { id: 87, question: "一般外分厘卡的最小量測範圍是", options: { A: "0～10mm", B: "0～15mm", C: "0～20mm", D: "0～25mm" }, answer: "D" },
+    { id: 88, question: "一般公制分厘卡主軸之螺距為", options: { A: "0.5mm", B: "1mm", C: "2.5mm", D: "5mm" }, answer: "A" },
+    { id: 89, question: "一般游標卡尺無法直接量測工件之", options: { A: "內徑", B: "深度", C: "錐度", D: "階段差" }, answer: "C" },
+    { id: 90, question: "一般游標卡尺在本尺上每一刻劃是", options: { A: "0.02mm", B: "0.05mm", C: "0.5mm", D: "1mm" }, answer: "D" },
+    { id: 91, question: "一般公制游標卡尺可量測之最小尺寸為", options: { A: "0.05mm", B: "0.02mm", C: "0.01mm", D: "0.001mm" }, answer: "B" },
+    { id: 92, question: "游標卡尺上的深度測桿是依附於下列何部位滑動", options: { A: "外側測爪", B: "內側測爪", C: "本尺背面", D: "游尺" }, answer: "C" },
+    { id: 93, question: "游標高度規除了可量測工件高度外，還可用於", options: { A: "劃線", B: "量測孔徑", C: "量測錐度", D: "量測角度" }, answer: "A" },
+    { id: 94, question: "一般利用游標原理之高度規，可量測之最高精度為", options: { A: "0.001mm", B: "0.01mm", C: "0.02mm", D: "0.05mm" }, answer: "C" },
+    { id: 95, question: "一般角尺的夾角是", options: { A: "30度", B: "60度", C: "90度", D: "120度" }, answer: "C" },
+    { id: 96, question: "使用角尺檢驗工件垂直度，需與下列何者配合", options: { A: "平板", B: "內分厘卡", C: "游標卡尺", D: "外分厘卡" }, answer: "A" },
+    { id: 97, question: "1μm等於", options: { A: "0.1mm", B: "0.01mm", C: "0.001mm", D: "0.0001mm" }, answer: "C" },
+    { id: 98, question: "規格15cm長的鋼尺，其最小刻度為", options: { A: "0.5mm", B: "1mm", C: "5mm", D: "10mm" }, answer: "A" },
+    { id: 99, question: "下列鋼尺的操作方式，何者正確？", options: { A: "尺端受損不影響量測", B: "可分辨出0.1mm之尺寸", C: "量測尺寸時，視線須垂直尺面", D: "可用來量測垂直度" }, answer: "C" },
+    { id: 100, question: "下列游標卡尺的操作方式，何者正確？", options: { A: "適合量測轉動中的工件", B: "視線須垂直尺面刻度以讀取尺寸", C: "深度尺須施以較大的壓力來量測尺寸", D: "儘量用測爪的尾端量測工件" }, answer: "B" },
+    { id: 101, question: "下列游標卡尺的操作方式，何者不正確？", options: { A: "使用後擦拭乾淨", B: "使用前檢查游尺的滑動情況", C: "不可與其它工具相疊", D: "內測爪可當劃針使用" }, answer: "D" },
+    { id: 102, question: "使用游標卡尺前的外觀檢驗不包括", options: { A: "合爪時，內外測爪是否閉合", B: "內測爪是否損傷", C: "合爪時，本尺與游尺是否歸零", D: "測定力檢驗" }, answer: "D" },
+    { id: 103, question: "以外測爪量測60.00mm塊規時，游標卡尺的讀值為59.96mm，當量測工件的讀值為63.72mm，則工件的正確尺寸為", options: { A: "63.68mm", B: "63.72mm", C: "63.76mm", D: "63.80mm" }, answer: "C" },
+    { id: 104, question: "游標卡尺量測工件外徑時，施加過大之夾緊力將量得", options: { A: "正確尺寸", B: "偏大尺寸", C: "偏小尺寸", D: "與施力大小無關" }, answer: "C" },
+    { id: 105, question: "以游標卡尺內測爪量測小於5mm直徑內孔，其", options: { A: "讀值大於正確尺寸", B: "讀值小於正確尺寸", C: "讀值等於正確尺寸", D: "孔徑愈小誤差愈小" }, answer: "B" },
+    { id: 106, question: "若游標卡尺本尺1格1mm，取本尺19mm長作為游尺的長度，並將此長度20等分，則此游標卡尺的最小讀數為", options: { A: "0.02mm", B: "0.05mm", C: "0.1mm", D: "0.5mm" }, answer: "B" },
+    { id: 107, question: "若游標卡尺本尺1格1mm，取本尺49mm長作為游尺的長度，並將此長度50等分，則此游標卡尺的最小讀數為", options: { A: "0.02mm", B: "0.05mm", C: "0.1mm", D: "0.5mm" }, answer: "A" },
+    { id: 108, question: "若游標卡尺本尺1格1mm，取其9格在游尺上分成10格，則本尺1格與游尺1格相差", options: { A: "0.02mm", B: "0.05mm", C: "0.1mm", D: "0.5mm" }, answer: "C" },
+    { id: 109, question: "若游標卡尺本尺1格1mm，取本尺39mm長作為游尺的長度，並將此長度20等分，則此游標卡尺的最小讀數為", options: { A: "0.02mm", B: "0.05mm", C: "0.1mm", D: "0.5mm" }, answer: "B" },
+    { id: 110, question: "若游標卡尺本尺1格1mm，取其39格在游尺上分成20格，則本尺2格與游尺1格相差", options: { A: "0.02mm", B: "0.05mm", C: "0.1mm", D: "0.5mm" }, answer: "B" },
+    { id: 111, question: "游標卡尺的游尺太鬆動，則應", options: { A: "敲擊滑道使縮小間隙", B: "調整滑道間隙螺絲", C: "調整固定螺絲的鬆緊度", D: "不必調整" }, answer: "B" },
+    { id: 112, question: "游標卡尺的內測爪尖端若微量隆起，則應", options: { A: "適當處理凸出部份", B: "使用砂輪機磨除", C: "敲擊使回復原形狀", D: "不必調整" }, answer: "A" },
+    { id: 113, question: "以游標卡尺直接量測下圖之30mm尺寸，宜採用的量測方式為", image :"https://i.urusai.cc/V3k7H.png", options: { A: "外側量測", B: "內側量測", C: "段差量測", D: "深度桿量測" }, answer: "C" },
+    { id: 114, question: "以游標卡尺直接量測下圖之10mm尺寸，宜採用的量測方式為", options: { A: "外側量測", B: "內側量測", C: "段差量測", D: "深度桿量測" }, answer: "B" },
+    { id: 115, question: "以游標卡尺直接量測階級桿之直徑，宜採用的量測方式為", options: { A: "外側量測", B: "內側量測", C: "段差量測", D: "深度桿量測" }, answer: "A" },
+    { id: 116, question: "以游標卡尺直接量測下圖之20mm尺寸，宜採用的量測方式為",image :"https://i.urusai.cc/ceou5.png", options: { A: "外側量測", B: "內側量測", C: "段差量測", D: "深度桿量測" }, answer: "C" },
+    { id: 117, question: "宜採用下列何種量具量測尺寸公差為±0.05mm的工件", options: { A: "鋼尺", B: "卡鉗", C: "游標卡尺", D: "分厘卡" }, answer: "C" },
+    { id: 118, question: "宜採用下列何種量具量測尺寸公差為±0.01mm的工件", options: { A: "鋼尺", B: "卡鉗", C: "游標卡尺", D: "分厘卡" }, answer: "D" },
+    { id: 119, question: "分厘卡正確使用方法是", options: { A: "量測旋轉中的工件", B: "握住套筒旋轉使主軸前後移動", C: "避免分厘卡碰撞", D: "收藏時須將砧座面與量測面貼緊" }, answer: "C" },
+    { id: 120, question: "銼刀的長度規格指", options: { A: "刀端到刀踵的長度", B: "全長", C: "銼齒部份的長度", D: "有效銼齒的長度" }, answer: "A" },
+    { id: 121, question: "曲切齒銼刀適用於銼削何種材質之工件", options: { A: "鋁", B: "高碳鋼", C: "合金鋼", D: "青銅" }, answer: "A" },
+    { id: 122, question: "單切齒銼刀適用於何種加工", options: { A: "粗銼", B: "配合砂布砂光", C: "銼硬材質", D: "銼光" }, answer: "D" },
+    { id: 123, question: "下列何種平口螺絲起子的刀端側面形狀，於鎖螺絲時較不易打滑",image :"https://i.urusai.cc/SuAw9.jpg", options: { A: "A", B: "B", C: "C", D: "D" }, answer: "C" },
+    { id: 124, question: "下列何種鋸條長度不適用於一般手弓鋸的鋸架", options: { A: "200mm", B: "250mm", C: "300mm", D: "500mm" }, answer: "D" },
+    { id: 125, question: "欲切斷壁厚0.1mm之鋼管，適合使用", options: { A: "每吋18齒鋸條", B: "每吋24齒鋸條", C: "每吋32齒鋸條", D: "切管器" }, answer: "D" },
+    { id: 126, question: "鑽孔時，鑽頭將穿過工件的進給率宜", options: { A: "加快", B: "減慢", C: "不變", D: "暫停" }, answer: "B" },
+    { id: 127, question: "桌上型靈敏鑽床欲鑽1.5mm之孔徑，擬採用鑽削速度30m/min，在下列4段轉速中宜採用", options: { A: "550rpm", B: "1050rpm", C: "1750rpm", D: "3000rpm" }, answer: "D" },
+    { id: 128, question: "鑽孔時，主軸轉速與鑽頭直徑", options: { A: "成反比", B: "成正比", C: "平方成正比", D: "平方成反比" }, answer: "A" },
+    { id: 129, question: "砂輪機之右側砂輪主軸，鎖固砂輪之螺帽，其旋向為", options: { A: "右旋", B: "左旋", C: "左右旋皆可", D: "與砂輪旋轉方向無關" }, answer: "A" },
+    { id: 130, question: "砂輪機常用的砂輪修整工具為", options: { A: "廢砂輪", B: "砂輪修整器", C: "鑽石砂輪", D: "廢車刀" }, answer: "B" },
+    { id: 131, question: "下列何者不是使用切削劑的目的", options: { A: "可增加刀具的壽命", B: "可增加切屑的流動性", C: "增加切削阻力", D: "降低工件及刀具溫" }, answer: "C" },
+    { id: 132, question: "活動扳手之大小規格，通常以下列何者來表示", options: { A: "總長度", B: "柄部長度", C: "最大開口尺寸", D: "總重量" }, answer: "A" },
+    { id: 133, question: "手攻內螺紋時，通常每將扳手轉一圈，必須要逆轉1/4圈，其主要作用為", options: { A: "排出潤滑油", B: "加深螺紋", C: "磨銳螺絲攻", D: "折斷與排出切屑" }, answer: "D" },
+    { id: 134, question: "虎鉗大小規格係指其", options: { A: "鉗口寬度", B: "鉗口行程", C: "重量大小", D: "材質種類" }, answer: "A" },
+    { id: 135, question: "二支長度分別為200mm及250mm的粗銼刀，其銼齒粗細", options: { A: "相同", B: "短者較粗", C: "長者較粗", D: "與長度無關" }, answer: "C" },
+    { id: 136, question: "手工鋸切軟鋼較適當的鋸切速度約為", options: { A: "10～20次/分", B: "30～40次/分", C: "50～60次/分", D: "70～80次/分" }, answer: "C" },
+    { id: 137, question: "所謂18齒鋸條是指多少長度內有18齒", options: { A: "10mm", B: "20mm", C: "25.4mm", D: "100mm" }, answer: "C" },
+    { id: 138, question: "鑽孔時，鐵屑只有單邊(槽)排出，另一邊完全不排出，其主要原因為鑽頭", options: { A: "兩切刃長不等", B: "兩鑽唇半形不相等", C: "鑽唇間隙角太大", D: "鑽唇角太大" }, answer: "B" },
+    { id: 139, question: "下列何者是使用鑽模鑽孔的優點", options: { A: "須劃線", B: "須打中心", C: "須鑽導孔", D: "適合大量生產" }, answer: "D" },
+    { id: 140, question: "鑽頭常用之鑽唇間隙角範圍為", options: { A: "5°～7°", B: "8°～12°", C: "13°～15°", D: "16°～20°" }, answer: "B" },
+    { id: 141, question: "以高速鋼鑽頭在鑄鐵上鑽削30mm孔徑，若切削速度為25m/min，則鑽床主軸轉速約為", options: { A: "145rpm", B: "185rpm", C: "225rpm", D: "265rpm" }, answer: "D" },
+    { id: 142, question: "＃100號的砂係表示由何種大小的篩子所篩出", options: { A: "每25.4mm2中有100個篩孔", B: "每25.4mm中有100個篩孔", C: "每1cm2中有100個篩孔", D: "每1cm中有100個篩孔" }, answer: "B" },
+    { id: 143, question: "A代號的砂輪，主要磨粒材料是", options: { A: "氧化鋁(Al2O3)", B: "碳化矽(SiC)", C: "黏土", D: "樹脂" }, answer: "A" },
+    { id: 144, question: "A-36-L-5-V-23之砂輪規格中，5代表", options: { A: "結合材料", B: "組織密度", C: "磨料粒度", D: "結合度" }, answer: "B" },
+    { id: 145, question: "鋸條鋸齒不易卡住鋸槽是藉由", options: { A: "鋸齒刃之排列方式", B: "鋸齒之齒數", C: "鋸條的材質", D: "鋸條的長度" }, answer: "A" },
+    { id: 146, question: "調水油切削劑之散熱性良好並有潤滑效果，其溶液是由水與油脂混合而成，水是油的多少倍", options: { A: "1～5", B: "10～100", C: "100～200", D: "200以上" }, answer: "B" },
+    { id: 147, question: "磨床工作宜用何種冷卻劑", options: { A: "調水油", B: "煤油", C: "硫化酯油", D: "硫氯化油" }, answer: "A" },
+    { id: 148, question: "下列何者不是銑床規格的表示法", options: { A: "床台的縱向移動距離", B: "銑床刀軸的大小", C: "主軸孔錐度", D: "可裝銑刀之數量" }, answer: "D" },
+    { id: 149, question: "鑽孔結果，其孔徑擴大之原因為", options: { A: "鑽唇角過大", B: "鑽頭太鈍", C: "鑽唇間隙角太小", D: "鑽唇長度不同" }, answer: "D" },
+    { id: 150, question: "鑽削黃銅或木材時，如鑽頭折斷可能原因為", options: { A: "鑽頭太大", B: "鑽速過快", C: "鑽唇間隙角太大", D: "鑽屑阻塞鑽槽" }, answer: "D" },
+    { id: 151, question: "鑽頭易於磨鈍，較不可能的原因為", options: { A: "進刀太慢", B: "轉速太快", C: "鑽唇角太小", D: "鑽唇角太大" }, answer: "A" },
+    { id: 152, question: "鬆緊外六角螺帽宜選用", options: { A: "管鉗扳手", B: "活動扳手", C: "開口扳手", D: "扭力扳手" }, answer: "C" },
+    { id: 153, question: "鋼質手錘的規格依", options: { A: "錘頭重量而定", B: "錘頭尺寸而定", C: "手柄長度而定", D: "手柄材質而定" }, answer: "A" },
+    { id: 154, question: "最容易傷及工件表面的手錘是", options: { A: "鋼錘", B: "銅錘", C: "橡膠錘", D: "塑膠錘" }, answer: "A" },
+    { id: 155, question: "用手弓鋸鋸切直徑25mm的高碳鋼時，宜選用的鋸條齒數為每25.4mm有", options: { A: "10齒", B: "18齒", C: "24齒", D: "32齒" }, answer: "B" },
+    { id: 156, question: "粗銼削鋼塊常用的銼刀，宜選用切齒之形狀為", options: { A: "單切齒", B: "雙切齒", C: "曲切齒", D: "點切齒" }, answer: "B" },
+    { id: 157, question: "一般不套木柄的銼刀是", options: { A: "平銼刀", B: "方銼刀", C: "圓銼刀", D: "什錦銼刀" }, answer: "D" },
+    { id: 158, question: "夾持直徑50mm之長圓管在鑽床上鑽孔，宜選用", options: { A: "平行夾", B: "鯉魚鉗", C: "C形夾及角板", D: "V形枕及壓板" }, answer: "D" },
+    { id: 159, question: "一般桌上型鑽床的規格多以下列何者表示", options: { A: "鑽床高度", B: "鑽床寬度", C: "鑽頭最大直徑", D: "鑽頭最大長度" }, answer: "C" },
+    { id: 160, question: "大型工件的鑽孔宜選用", options: { A: "桌上型鑽床", B: "直立式鑽床", C: "多軸鑽床", D: "旋臂鑽床" }, answer: "D" },
+    { id: 161, question: "一般在鑽削低碳鋼時，麻花鑽頭的螺旋角宜選用", options: { A: "15度", B: "25度", C: "34度", D: "45度" }, answer: "B" },
+    { id: 162, question: "高速鋼鑽頭鑽削中碳鋼時，宜選用的鑽削速度為", options: { A: "15m/min", B: "25m/min", C: "35m/min", D: "45m/min" }, answer: "B" },
+    { id: 163, question: "能切削平面、角度、正齒輪及凹槽的工具機是", options: { A: "車床", B: "鑽床", C: "銑床", D: "搪床" }, answer: "C" },
+    { id: 164, question: "選用砂輪時，不必考慮的項目為", options: { A: "顏色", B: "磨料", C: "粒度", D: "結合度" }, answer: "A" },
+    { id: 165, question: "砂輪機上常用的砂輪形狀為", options: { A: "平直形", B: "環形", C: "盤形", D: "盆形" }, answer: "A" },
+    { id: 166, question: "滾珠軸承一般使用的潤滑劑是", options: { A: "黃油", B: "機油", C: "空氣", D: "石墨" }, answer: "A" },
+    { id: 167, question: "目前工業上廣泛採用的傳統潤滑劑是", options: { A: "動物油", B: "礦物油", C: "黃油", D: "植物油" }, answer: "B" },
+    { id: 168, question: "一般手弓鋸條之材質為", options: { A: "中碳鋼", B: "鑄鋼", C: "碳化物", D: "高碳工具鋼" }, answer: "D" },
+    { id: 169, question: "選用手弓鋸條要先決定", options: { A: "鋸條長度", B: "鋸條寬度", C: "鋸條厚度", D: "鋸條齒數" }, answer: "D" },
+    { id: 170, question: "通常高速鋼手鋸條表面漆上", options: { A: "黑色", B: "紅色", C: "藍色", D: "白色" }, answer: "C" },
+    { id: 171, question: "一般手弓鋸條的鋸齒部位經常作何種熱處理？", options: { A: "淬火", B: "退火", C: "表面硬化", D: "不必處理" }, answer: "A" },
+    { id: 172, question: "最常用的手鋸條長度為", options: { A: "200公厘", B: "250公厘", C: "300公厘", D: "350公厘" }, answer: "C" },
+    { id: 173, question: "手弓鋸條的寬度是", options: { A: "12公厘", B: "15公厘", C: "20公厘", D: "25公厘" }, answer: "A" },
+    { id: 174, question: "手弓鋸條之鋸齒形式以何種使用較多？", options: { A: "單齒交錯式", B: "三齒交錯式", C: "波浪彎曲式", D: "不規則形式" }, answer: "A" },
+    { id: 175, question: "手弓鋸條之長度如何訂定？", options: { A: "鋸條全長", B: "鋸條上兩孔間距", C: "全齒長", D: "鋸條有鋸齒的長度" }, answer: "B" },
+    { id: 176, question: "手弓鋸條之齒數用什麼決定？", options: { A: "每公分長的齒數", B: "每25.4公厘長的齒數", C: "每30公分長的齒數", D: "鋸條全長齒數" }, answer: "B" },
+    { id: 177, question: "用手弓鋸鋸割工件時，雙眼要注意", options: { A: "鋸片", B: "鋸架", C: "與鋸割線距離", D: "眼觀四方" }, answer: "C" },
+    { id: 178, question: "手弓鋸鋸割工件時，其出力方向為", options: { A: "向前推", B: "向內拉", C: "向下加壓", D: "向前推又向下加壓" }, answer: "D" },
+    { id: 179, question: "手弓鋸鋸割工件時，工件歪斜是因為", options: { A: "鋸條裝太緊", B: "工件沒有夾緊", C: "鋸條裝太鬆", D: "未注意與鋸割線距離" }, answer: "B" },
+    { id: 180, question: "手弓鋸條在工作中常折斷，原因是", options: { A: "材料太硬", B: "材料太薄", C: "鋸條裝配過緊", D: "材料太軟" }, answer: "C" },
+    { id: 181, question: "鋸割時，鋸條折斷，換新鋸條後要如何鋸割？", options: { A: "換新鋸路", B: "循原鋸路先輕輕鋸割", C: "循原鋸路反向鋸割", D: "循原鋸路先重重鋸割" }, answer: "B" },
+    { id: 182, question: "手弓鋸鋸割薄工件時，發出刺耳的聲音，是因為工件鋸割線距離鉗口邊", options: { A: "太近", B: "太遠", C: "太低", D: "太短" }, answer: "B" },
+    { id: 183, question: "一般手弓鋸的鋸條鋸割薄工件，齒數以何種為宜？", options: { A: "15齒", B: "20齒", C: "25齒", D: "32齒" }, answer: "D" },
+    { id: 184, question: "虎鉗的規格是以下列何種方式表示？", options: { A: "鉗口寬度", B: "虎鉗長度", C: "虎鉗寬度", D: "虎鉗高度" }, answer: "A" },
+    { id: 185, question: "虎鉗的安裝高度約在操作者的何處？", options: { A: "膝高", B: "肩高", C: "胸高", D: "腰高" }, answer: "D" },
+    { id: 186, question: "下列何種方式不是虎鉗夾持工件的原則？", options: { A: "工件高出鉗口表面愈高愈好", B: "儘量使固定鉗口承受切削力", C: "工件宜夾於鉗口中央", D: "夾持鑄鐵胚料宜加鉗口罩" }, answer: "A" },
+    { id: 187, question: "銼刀依公稱長度分類，從100公厘到400公厘，每隔多少公厘一支？", options: { A: "10公厘", B: "25公厘", C: "40公厘", D: "50公厘" }, answer: "D" },
+    { id: 188, question: "一般銼齒的粗細和下列何者有關？", options: { A: "厚度", B: "硬度", C: "寬度", D: "長度" }, answer: "D" },
+    { id: 189, question: "平銼刀的公稱長度，是指", options: { A: "刀柄", B: "刀端至刀踵", C: "刀踵至刀跟", D: "刀端至刀柄" }, answer: "B" },
+    { id: 190, question: "銼刀多以何種材料製成？", options: { A: "高速鋼", B: "中碳鋼", C: "高碳鋼", D: "合金鋼" }, answer: "C" },
+    { id: 191, question: "雙切齒銼刀的上切齒的主要功用為何？", options: { A: "美觀", B: "礪光", C: "切削", D: "排屑" }, answer: "C" },
+    { id: 192, question: "銼刀的木柄前端加套一個金屬環有何功用？", options: { A: "較易握持", B: "美觀", C: "防止木柄破裂", D: "增加銼削速度" }, answer: "C" },
+    { id: 193, question: "為了防止鐵屑沾住，可在銼刀面塗上", options: { A: "紅丹", B: "粉筆", C: "切削劑", D: "潤滑油" }, answer: "B" },
+    { id: 194, question: "進行銼削工作時，握持銼刀柄時姆指應放在銼刀何處？", options: { A: "右側", B: "左側", C: "下面", D: "上面" }, answer: "D" },
+    { id: 195, question: "平面銼削時，下列何種銼削動作可達到較平的平面？", options: { A: "快、狠", B: "慢、穩", C: "短、快", D: "短、慢" }, answer: "B" },
+    { id: 196, question: "在銼削工作中，真正有切削作用的是", options: { A: "去程", B: "回程", C: "來回程", D: "無法判斷" }, answer: "A" },
+    { id: 197, question: "進行交叉銼時，交叉的角度約為幾度？", options: { A: "10", B: "20", C: "30", D: "40" }, answer: "C" },
+    { id: 198, question: "公制螺紋牙角為60°之代號為", options: { A: "M", B: "W", C: "UNF", D: "UNC" }, answer: "A" },
+    { id: 199, question: "螺紋代號為M10×1.5，“1.5”是代表", options: { A: "牙數", B: "節距", C: "牙高", D: "牙寬" }, answer: "B" },
+    { id: 200, question: "一般攻絲前鑽削導孔是外徑減去", options: { A: "牙深", B: "節距", C: "節徑", D: "底徑" }, answer: "B" }
+];
+// =================================================
+
+// 全局狀態控制
+let currentRange = 1; 
+let currentMode = 'practice'; // 'practice' | 'exam' | 'edit'
+let userAnswers = {}; 
+let timerInterval = null;
+let secondsElapsed = 0;
+
+window.onload = function() { renderQuiz(); };
+
+// ===== 檔案處理功能 =====
+function exportJSON() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(questionBank, null, 4));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "鉗工題庫_自訂.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+}
+
+function importJSON() {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json';
+    fileInput.onchange = e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.readAsText(file, 'UTF-8');
+        reader.onload = readerEvent => {
+            try {
+                const parsed = JSON.parse(readerEvent.target.result);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    questionBank = parsed;
+                    alert('✅ 題庫匯入成功！');
+                    renderQuiz();
+                } else {
+                    alert('格式錯誤：無法識別題庫陣列。');
+                }
+            } catch(err) {
+                alert('檔案解析失敗，請確認是否為正確的 JSON 檔！');
+            }
+        }
+    }
+    fileInput.click();
+}
+
+// ===== 控制面板功能 =====
+function changeRange(range) {
+    currentRange = range;
+    userAnswers = {};
+    document.querySelectorAll('#rangeBtns .btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx + 1 === range);
+    });
+    if (currentMode === 'exam') resetTimer();
+    renderQuiz();
+}
+
+function changeMode(mode) {
+    currentMode = mode;
+    userAnswers = {};
+
+    document.querySelectorAll('#modeBtns .btn').forEach((btn) => {
+        btn.classList.remove('active', 'active-edit');
+        if (mode === 'practice' && btn.innerText.includes('練習')) btn.classList.add('active');
+        if (mode === 'exam' && btn.innerText.includes('考試')) btn.classList.add('active');
+        if (mode === 'edit' && btn.innerText.includes('編輯')) btn.classList.add('active-edit');
+    });
+
+    const timerBox = document.getElementById('timerBox');
+    const actionBar = document.getElementById('actionBar');
+
+    if (mode === 'exam') {
+        timerBox.style.display = 'inline-block';
+        actionBar.style.display = 'block';
+        startTimer();
+    } else {
+        timerBox.style.display = 'none';
+        actionBar.style.display = 'none';
+        stopTimer();
+    }
+    renderQuiz();
+}
+
+// ===== 圖片處理功能 =====
+function uploadImage(qId, input) {
+    const file = input.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const q = questionBank.find(x => x.id === qId);
+            if(q) {
+                q.image = e.target.result;
+                renderQuiz();
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function removeImage(qId) {
+    const q = questionBank.find(x => x.id === qId);
+    if (q) {
+        delete q.image;
+        renderQuiz();
+    }
+}
+
+// ===== 編輯更新功能 =====
+function updateQuestionField(qId, field, value, optKey = null) {
+    const q = questionBank.find(x => x.id === qId);
+    if (!q) return;
+    if (field === 'question') q.question = value;
+    if (field === 'answer') q.answer = value;
+    if (field === 'option') q.options[optKey] = value;
+}
+
+// ===== 核心渲染功能 =====
+function getCurrentQuestions() {
+    const startIdx = (currentRange - 1) * 50;
+    return questionBank.slice(startIdx, startIdx + 50);
+}
+
+function renderQuiz() {
+    const questions = getCurrentQuestions();
+    const container = document.getElementById('quizContainer');
+    const navGrid = document.getElementById('navGrid');
+    
+    container.innerHTML = '';
+    navGrid.innerHTML = '';
+
+    questions.forEach((q, index) => {
+        const qNumber = (currentRange - 1) * 50 + index + 1;
+        const userAnswer = userAnswers[q.id];
+
+        // 1. 建立導覽按鈕
+        const navBtn = document.createElement('button');
+        navBtn.className = 'nav-btn';
+        navBtn.innerText = qNumber;
+        if (userAnswer && currentMode !== 'edit') {
+            if (currentMode === 'practice') navBtn.classList.add(userAnswer === q.answer ? 'correct' : 'wrong');
+            else navBtn.classList.add('answered');
+        }
+        navBtn.onclick = () => document.getElementById(`q_card_${q.id}`).scrollIntoView({ behavior: 'smooth' });
+        navGrid.appendChild(navBtn);
+
+        // 2. 建立題目卡片
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.id = `q_card_${q.id}`;
+
+        if (currentMode === 'edit') {
+            // === 編輯模式介面 ===
+            let imgHTML = q.image ? `
+                <div style="margin-bottom: 10px;">
+                    <img src="${q.image}" class="question-image">
+                    <button class="remove-img-btn" onclick="removeImage(${q.id})">🗑️ 刪除圖片</button>
+                </div>` : '';
+
+            card.innerHTML = `
+                <div class="edit-row">
+                    <label>題目 ${qNumber}：</label>
+                    <input type="text" class="edit-input" value="${q.question}" onchange="updateQuestionField(${q.id}, 'question', this.value)">
+                </div>
+                <div class="edit-row">
+                    <label>圖片 (選填)：</label>
+                    ${imgHTML}
+                    <input type="file" accept="image/*" onchange="uploadImage(${q.id}, this)">
+                </div>
+                <div class="edit-row edit-flex"><label>選項 A：</label><input type="text" class="edit-input" value="${q.options.A}" onchange="updateQuestionField(${q.id}, 'option', this.value, 'A')"></div>
+                <div class="edit-row edit-flex"><label>選項 B：</label><input type="text" class="edit-input" value="${q.options.B}" onchange="updateQuestionField(${q.id}, 'option', this.value, 'B')"></div>
+                <div class="edit-row edit-flex"><label>選項 C：</label><input type="text" class="edit-input" value="${q.options.C}" onchange="updateQuestionField(${q.id}, 'option', this.value, 'C')"></div>
+                <div class="edit-row edit-flex"><label>選項 D：</label><input type="text" class="edit-input" value="${q.options.D}" onchange="updateQuestionField(${q.id}, 'option', this.value, 'D')"></div>
+                <div class="edit-row edit-flex">
+                    <label>正確答案：</label>
+                    <select class="edit-select" onchange="updateQuestionField(${q.id}, 'answer', this.value)">
+                        <option value="A" ${q.answer === 'A' ? 'selected' : ''}>A</option>
+                        <option value="B" ${q.answer === 'B' ? 'selected' : ''}>B</option>
+                        <option value="C" ${q.answer === 'C' ? 'selected' : ''}>C</option>
+                        <option value="D" ${q.answer === 'D' ? 'selected' : ''}>D</option>
+                    </select>
+                </div>
+            `;
+        } else {
+            // === 練習 / 考試模式介面 ===
+            let imgHTML = q.image ? `<img src="${q.image}" class="question-image" alt="題目圖片">` : '';
+            let optionsHTML = '';
+            
+            for (const [key, val] of Object.entries(q.options)) {
+                let optionClass = 'option-item';
+                if (userAnswer) {
+                    if (currentMode === 'practice') {
+                        if (key === q.answer) optionClass += ' correct';
+                        else if (key === userAnswer) optionClass += ' wrong';
+                    } else {
+                        if (key === userAnswer) optionClass += ' selected';
+                    }
+                }
+                optionsHTML += `<div class="${optionClass}" onclick="selectOption(${q.id}, '${key}')"><strong>(${key})</strong> ${val}</div>`;
+            }
+
+            card.innerHTML = `
+                <div class="question-title">${qNumber}. ${q.question}</div>
+                ${imgHTML}
+                <div class="options-list">${optionsHTML}</div>
+            `;
+        }
+        container.appendChild(card);
+    });
+}
+
+function selectOption(qId, selectedKey) {
+    if (currentMode === 'practice' && userAnswers[qId]) return; 
+    userAnswers[qId] = selectedKey;
+    renderQuiz();
+}
+
+// ===== 計時與結算 =====
+function startTimer() { stopTimer(); secondsElapsed = 0; updateTimerDisplay(); timerInterval = setInterval(() => { secondsElapsed++; updateTimerDisplay(); }, 1000); }
+function stopTimer() { if (timerInterval) clearInterval(timerInterval); }
+function resetTimer() { stopTimer(); startTimer(); }
+function updateTimerDisplay() {
+    document.getElementById('timerText').innerText = `${String(Math.floor(secondsElapsed / 60)).padStart(2, '0')}:${String(secondsElapsed % 60).padStart(2, '0')}`;
+}
+
+function submitExam() {
+    stopTimer();
+    const questions = getCurrentQuestions();
+    let correctCount = 0;
+    questions.forEach(q => { if (userAnswers[q.id] === q.answer) correctCount++; });
+    document.getElementById('modalScore').innerText = `${correctCount * 2} 分`;
+    document.getElementById('modalDetail').innerHTML = `
+        答對：${correctCount} 題 | 答錯：${50 - correctCount} 題<br>
+        答題時間：${String(Math.floor(secondsElapsed / 60)).padStart(2, '0')} 分 ${String(secondsElapsed % 60).padStart(2, '0')} 秒`;
+    document.getElementById('scoreModal').style.display = 'flex';
+}
+
+function closeModal() { document.getElementById('scoreModal').style.display = 'none'; }
+</script>
+
+</body>
+</html>
