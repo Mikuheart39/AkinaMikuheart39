@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>建國國民中學 國三綜合練習題庫 - 輔導與生涯規畫</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+    <!-- Header Section -->
+    <header class="bg-gradient-to-r from-indigo-700 via-indigo-600 to-violet-700 text-white shadow-lg sticky top-0 z-30">
+        <div class="max-w-6xl mx-auto px-4 py-3 sm:py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="p-2.5 bg-white/10 rounded-xl backdrop-blur-md border border-white/20">
+                    <i class="fa-solid fa-[#faad14] fa-compass text-2xl text-amber-300"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-indigo-200">建國國民中學 綜合活動領域</span>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight">國三輔導練習題庫：生涯規畫與學習策略</h1>
+                </div>
+            </div>
+
+            <!-- Mode Switch Tabs -->
+            <div class="flex items-center bg-indigo-900/50 p-1 rounded-xl border border-white/10 self-start md:self-auto">
+                <button id="mode-exam-btn" onclick="switchMode('exam')" 
+                        class="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center space-x-2">
+                    <i class="fa-solid fa-file-signature"></i>
+                    <span>考試模式</span>
+                </button>
+                <button id="mode-practice-btn" onclick="switchMode('practice')" 
+                        class="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center space-x-2">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <span>練習模式</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Controls & Status Toolbar -->
+    <section class="bg-white border-b border-slate-200 shadow-sm sticky top-[68px] sm:top-[76px] z-20">
+        <div class="max-w-6xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-sm">
+            <!-- Progress Info -->
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <span class="text-slate-500 font-medium">進度:</span>
+                    <span id="progress-text" class="font-bold text-indigo-600 text-base">0 / 25</span>
+                </div>
+                <div class="w-28 sm:w-44 bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-200">
+                    <div id="progress-bar" class="bg-indigo-600 h-full w-0 transition-all duration-300 rounded-full"></div>
+                </div>
+            </div>
+
+            <!-- Timer & Actions -->
+            <div class="flex items-center space-x-3 ml-auto">
+                <div class="flex items-center space-x-1.5 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 text-xs sm:text-sm font-mono">
+                    <i class="fa-regular fa-clock text-slate-400"></i>
+                    <span id="timer-display">00:00</span>
+                </div>
+
+                <button onclick="toggleMapModal()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center space-x-1.5">
+                    <i class="fa-solid fa-th-large"></i>
+                    <span class="hidden sm:inline">題號</span>地圖
+                </button>
+
+                <button id="reset-btn" onclick="confirmReset()" class="px-3 py-1.5 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center space-x-1">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span class="hidden sm:inline">重新</span>開始
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content Container -->
+    <main class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full">
+
+        <!-- Mode Intro / Notice Bar -->
+        <div id="mode-notice" class="mb-6 p-4 rounded-xl bg-indigo-50 border border-indigo-100 flex items-start space-x-3 text-indigo-900 text-sm">
+            <i class="fa-solid fa-circle-info text-indigo-500 text-lg mt-0.5"></i>
+            <div>
+                <span id="notice-title" class="font-bold block mb-0.5">考試模式說明</span>
+                <span id="notice-desc" class="text-indigo-700">在考試模式下，作答時不會顯示正確答案與解析。請完成所有 25 道題目後點擊下方「提交試卷」按鈕以計算成績與檢視詳細解答。</span>
+            </div>
+        </div>
+
+        <!-- Score Results Card (Hidden initially, shown post-submit in exam mode) -->
+        <div id="exam-results-card" class="hidden mb-8 bg-white rounded-2xl shadow-md border border-slate-200 p-6 sm:p-8 animate-fade-in">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-slate-100">
+                <div class="flex items-center space-x-5">
+                    <div id="score-badge" class="w-24 h-24 rounded-full flex flex-col items-center justify-center text-white font-bold shadow-lg bg-indigo-600">
+                        <span id="final-score" class="text-3xl leading-none">0</span>
+                        <span class="text-[10px] opacity-80 mt-1">分 (滿分100)</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h2 class="text-xl font-bold text-slate-800">測驗結果分析</h2>
+                            <span id="performance-tag" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700">標籤</span>
+                        </div>
+                        <p id="performance-msg" class="text-slate-600 text-sm mt-1">好極了！你對國三生涯規劃與學習技巧掌握得非常紮實。</p>
+                        <p class="text-xs text-slate-400 mt-1">花費時間：<span id="time-spent" class="font-mono">00:00</span></p>
+                    </div>
+                </div>
+
+                <!-- Stats summary -->
+                <div class="grid grid-cols-3 gap-3 w-full md:w-auto text-center">
+                    <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-xl">
+                        <span class="text-xs text-emerald-600 font-semibold block">答對題數</span>
+                        <span id="stat-correct" class="text-xl font-bold text-emerald-700">0</span>
+                    </div>
+                    <div class="bg-rose-50 border border-rose-100 p-3 rounded-xl">
+                        <span class="text-xs text-rose-600 font-semibold block">答錯題數</span>
+                        <span id="stat-wrong" class="text-xl font-bold text-rose-700">0</span>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-100 p-3 rounded-xl">
+                        <span class="text-xs text-amber-600 font-semibold block">未答題數</span>
+                        <span id="stat-unanswered" class="text-xl font-bold text-amber-700">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter buttons for reviewing questions -->
+            <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
+                <span class="text-sm font-semibold text-slate-700">題目檢視篩選：</span>
+                <div class="flex items-center space-x-2">
+                    <button onclick="setResultFilter('all')" id="filter-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-indigo-600 text-white">
+                        全部題目 (25)
+                    </button>
+                    <button onclick="setResultFilter('wrong')" id="filter-wrong" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-slate-100 text-slate-600 hover:bg-slate-200">
+                        僅看錯題
+                    </button>
+                    <button onclick="setResultFilter('correct')" id="filter-correct" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-slate-100 text-slate-600 hover:bg-slate-200">
+                        僅看對題
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions List Container -->
+        <div id="questions-container" class="space-y-6">
+            <!-- Dynamic questions injected by JS -->
+        </div>
+
+        <!-- Bottom Submit Bar (Exam mode only) -->
+        <div id="submit-bar" class="mt-8 flex justify-center pb-12">
+            <button onclick="confirmSubmitExam()" class="px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-xl font-bold text-base shadow-lg hover:shadow-indigo-500/25 transition-all transform active:scale-95 flex items-center space-x-2">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span>提交試卷並計算成績</span>
+            </button>
+        </div>
+    </main>
+
+    <!-- Question Quick Jump Modal -->
+    <div id="map-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 border border-slate-100 animate-fade-in">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center space-x-2">
+                    <i class="fa-solid fa-map-location-dot text-indigo-600"></i>
+                    <span>題目快速導航 map</span>
+                </h3>
+                <button onclick="toggleMapModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <p class="text-xs text-slate-500 mb-4">點擊下方題號可直接滾動跳轉至該題：</p>
+
+            <div id="map-grid" class="grid grid-cols-5 gap-2.5 max-h-72 overflow-y-auto custom-scrollbar p-1">
+                <!-- Buttons injected by JS -->
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                <div class="flex items-center space-x-3">
+                    <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-indigo-600 inline-block mr-1"></span>已答</span>
+                    <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-slate-200 inline-block mr-1"></span>未答</span>
+                </div>
+                <button onclick="toggleMapModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation / Warning Modal -->
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 border border-slate-100 animate-fade-in text-center">
+            <div id="confirm-icon-bg" class="w-14 h-14 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 id="confirm-title" class="text-lg font-bold text-slate-800 mb-2">確定要提交試卷嗎？</h3>
+            <p id="confirm-desc" class="text-slate-600 text-sm mb-6">您還有 5 道題目尚未作答，確定要現在提交交卷嗎？</p>
+            <div class="flex items-center justify-center space-x-3">
+                <button onclick="closeConfirmModal()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition">取消</button>
+                <button id="confirm-action-btn" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm transition shadow-md">確定提交</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Full Question Bank Data
+        const questions = [
+            {
+                id: 1,
+                tag: "生涯金三角 / Holland 碼",
+                q: "荷倫碼(Holland Code, 又稱 RIASEC 理論)其核心理念為：個人的生涯選擇是其人格特質的延伸，當工作環境與個人的人格特質越相符時，工作滿意度與成就感越高。請問下列何者的荷倫碼最能正確對應該人所從事的職業？",
+                options: [
+                    "一位能力極強的王牌業務員，她的荷倫碼是 ESC",
+                    "一位熱心助人、擅長傾聽與諮商的學校輔導老師，她的荷倫碼是 RCI",
+                    "一位精算財務、重視秩序且細心維護帳目的資深會計師，她的荷倫碼是 AIR",
+                    "一位富有想像力、擅長視覺美感與繪畫創作的畫家，她的荷倫碼是 CES"
+                ],
+                ans: 0,
+                exp: "(A) 正確：王牌業務員具備領導與說服影響力(E企業型)、社交與溝通互動(S社會型)及講求組織與效率(C事務型)，對應 ESC 極為符合。(B) 錯誤：輔導老師以助人(S)、傾聽(S/A)與分析(I)為主，屬於 S/I/A 等組合，而非包含大量動手做與操作工具的 R(實用型)。(C) 錯誤：會計師主特質為 C(事務型)。(D) 錯誤：畫家主特質為 A(藝術型)。"
+            },
+            {
+                id: 2,
+                tag: "生涯金三角",
+                q: "某甲參加學校辦理的技藝博覽會，並在現場施測「職業興趣測驗」，希望能進一步了解自己的興趣喜好與能力傾向。請依據生涯金三角理論判斷，某甲這項探索行為主要屬於哪一個面向的展現？",
+                options: ["自我認識", "社會環境關係", "教育與職業資訊", "生涯目標"],
+                ans: 0,
+                exp: "施測「職業興趣測驗」以了解自己的「興趣喜好與能力傾向」，屬於探索個人的內在特質，故為生涯金三角中的「自我認識」。"
+            },
+            {
+                id: 3,
+                tag: "生涯金三角",
+                q: "某乙的國中會考成績剛好介於錄取優質高中與優質高職之間，但他內心屬意報考警察專科學校(警專)當警察。因考量到家庭期待與未來的職涯發展，某乙主動與家長進行深入的溝通與討論。請問某乙「與重要他人(家長)溝通升學選擇與期待」的行為，主要屬於生涯金三角理論中的哪一個面向？",
+                options: ["自我認識", "社會環境關係", "教育與職業資訊", "生涯目標"],
+                ans: 1,
+                exp: "家長屬於個體生活中的「重要他人」，與家長溝通升學選擇與期待，涉及與周遭人群、家庭價值觀的互動關係，故屬於「社會環境關係」。"
+            },
+            {
+                id: 4,
+                tag: "生涯金三角",
+                q: "某乙得知警專屬於「單獨考招」管道，且要高中職畢業才能報考，與一般高中的「免試入學」或高職的「技優甄審」等管道不同。若某乙進一步去收集警專與普通高中的報考條件、修業年限與進路差異，此時某乙「評估與比較不同入學管道」的行為，屬於生涯金三角理論中的哪一個面向？",
+                options: ["自我認識", "社會環境關係", "教育與職業資訊", "生涯目標"],
+                ans: 2,
+                exp: "蒐集、評估並比較不同學校與入學管道的「報考條件、修業年限與進路差異」，屬於獲取與釐清外部升學與職業資訊，故屬於「教育與職業資訊」。"
+            },
+            {
+                id: 5,
+                tag: "生涯金三角",
+                q: "某丙目標是考取大學藥學系，自己多方搜尋資料後，不確定「就讀五專護理科」與「就讀醫護取向的綜合高中」哪一個在未來升學藥學系時較具優勢，因而前往輔導室向老師請教科系特色與升學進路分析。請問某丙前往輔導室「諮詢科系特色與比較升學管道優劣」的行為，主要屬於生涯金三角理論中的哪一個面向？",
+                options: ["自我認識", "社會環境關係", "教育與職業資訊", "生涯目標"],
+                ans: 2,
+                exp: "前往輔導室諮詢特定科系與升學管道的發展資訊，目的是深入獲取並了解特定學校科系的發展資訊，故屬於「教育與職業資訊」。"
+            },
+            {
+                id: 6,
+                tag: "生涯金三角",
+                q: "某丁在進行多方資料搜尋、向輔導老師諮詢升學進路(教育與職業資訊)，並釐清自身的興趣能力(自我認識)與家庭支持後，最終確立了「以考取藥學系、成為藥師」作為自己未來的發展方向。這項整合三大面向後所確定的核心方向，在生涯金三角結構圖中屬於：",
+                options: ["自我認識", "社會環境關係", "教育與職業資訊", "生涯目標"],
+                ans: 3,
+                exp: "在整合自我認識、教育與職業資訊以及社會環境關係後，最終「確立未來的發展方向與行動方針」，此核心方向即為「生涯目標」。"
+            },
+            {
+                id: 7,
+                tag: "學習技巧",
+                q: "康乃爾筆記法是將筆記本頁面分成幾個部分？",
+                options: [
+                    "「一大一小」兩個部分，分別為筆記欄、整理欄",
+                    "「兩大一小」三個部分，分別為筆記欄、整理欄和摘要欄",
+                    "「兩大兩小」四個部分，分別為筆記欄、整理欄、摘要欄和錯題欄",
+                    "「一大兩小」三個部分，分別為筆記欄、整理欄和摘要欄"
+                ],
+                ans: 3,
+                exp: "經典的康乃爾筆記法 (Cornell Note-Taking System) 是將頁面劃分為「一大兩小」三個區域：右上方最大的筆記欄(記錄詳細內容)、左側長條的整理/提示欄(寫關鍵字與提問)、以及最底部的摘要欄(總結重點)。"
+            },
+            {
+                id: 8,
+                tag: "高校調查",
+                q: "下列何者不適宜作為高校生活調查的資料來源及管道？",
+                options: [
+                    "潛入高校並進入教室旁聽",
+                    "學長姐或親友訪談",
+                    "實際到該校訪談參觀",
+                    "蒐集各校宣傳簡介"
+                ],
+                ans: 0,
+                exp: "未經允許擅自潛入高校並進入教室旁聽屬於不當且可能觸法的行為，會破壞學校秩序，因此不適宜作為調查管道。其餘選項皆為合宜手段。"
+            },
+            {
+                id: 9,
+                tag: "升學制度",
+                q: "十二年國民教育實施後，入學方式有什麼樣的改變？",
+                options: ["變得更單純", "變得更多元", "變得更狹隘", "變得更籠統"],
+                ans: 1,
+                exp: "十二年國民基本教育推行後，打破過去單一聯考的升學模式，提供包含免試入學、特色招生、技優甄審等多元管道，使入學管道變得更多元。"
+            },
+            {
+                id: 10,
+                tag: "壓力調適",
+                q: "關於壓力與個人表現的關係，下列敘述何者最適當？",
+                options: [
+                    "壓力愈小，個人表現愈強",
+                    "壓力愈大，愈能激發個人表現",
+                    "個人表現純粹是能力問題，與壓力程度大小無關",
+                    "適度的壓力有助於提升個人表現"
+                ],
+                ans: 3,
+                exp: "依據心理學中的「耶基斯多德森法則 (Yerkes-Dodson law)」，壓力與表現呈現倒 U 型曲線關係，適度的壓力最能引發動機、警覺性並提升個人表現。壓力過大或過小都會降低表現。"
+            },
+            {
+                id: 11,
+                tag: "學習技巧",
+                q: "康乃爾筆記法中，「摘要欄」的功能為何？",
+                options: ["記錄細節", "畫圖", "用兩三句話濃縮重點", "抄寫課文"],
+                ans: 2,
+                exp: "康乃爾筆記法底部的「摘要欄 (Summary)」，主要功能是在課後用兩三句話將全頁筆記的精華核心進行濃縮總結。"
+            },
+            {
+                id: 12,
+                tag: "學習技巧",
+                q: "康乃爾筆記法中，「左手邊直長條」的功能為何？",
+                options: ["記錄細節", "整理關鍵字與提示", "濃縮重點", "抄寫課文"],
+                ans: 1,
+                exp: "康乃爾筆記法左側的直長條欄位稱為「線索欄/整理欄 (Cue Column)」，專門用來提取關鍵字、提示、疑問與短標題，方便日後複習與自我測驗。"
+            },
+            {
+                id: 13,
+                tag: "學習技巧",
+                q: "下列哪一做法最能提升「長期」學習效果？",
+                options: ["平時持續整理與複習", "考前大量背誦", "考前臨時衝刺", "只練習選擇題"],
+                ans: 0,
+                exp: "平時持續整理與定期複習能將短期記憶轉化為長期記憶，達到最佳的長期學習效果。考前臨時衝刺或死記硬背僅能維持短暫記憶且容易遺忘。"
+            },
+            {
+                id: 14,
+                tag: "生涯規畫",
+                q: "關於國中畢業後生涯規畫的敘述，下列何者正確？",
+                options: [
+                    "達到生涯目標的路線僅有一種",
+                    "就讀何種類型的學校由父母決定即可",
+                    "進入普通型高中才有競爭力",
+                    "愈清楚各種升學管道，愈能明確規畫下一步"
+                ],
+                ans: 3,
+                exp: "(A) 達到生涯目標的路線有多種 (高職、五專、高中均可)。(B) 生涯規畫應由學生主動與家長溝通討論，而非單由父母決定。(C) 技職與普通高中各有優勢。(D) 正確，越全面清楚各類升學管道的規定與趨勢，越能做出最適合自己的規畫。"
+            },
+            {
+                id: 15,
+                tag: "免試入學",
+                q: "珮珮在國中期間，健康與體育、藝術、綜合活動及科技四個領域皆有好成績，她將在免試入學超額比序的哪一個項目中得分？",
+                options: ["獎勵紀錄", "就近入學", "學生志願序", "均衡學習"],
+                ans: 3,
+                exp: "在國中免試入學超額比序項目中，健體、藝術、綜合、科技等非考科領域的學習表現與成績，屬於採計領域均衡發展的「均衡學習」積分。"
+            },
+            {
+                id: 16,
+                tag: "備考策略",
+                q: "小安準備考試時採取以下方式：①規畫複習進度 ②練習圈選關鍵字 ③熬夜增加讀書時間 ④檢查考試用品。檢視小安的備考方式，下列敘述何者最合理？",
+                options: [
+                    "四項皆有助於提升表現",
+                    "只有①②④會幫助小安提升學業表現",
+                    "只有②③會幫助小安提升學業表現",
+                    "只有①③④會幫助小安提升學業表現"
+                ],
+                ans: 1,
+                exp: "① 規畫複習進度、② 練習圈選關鍵字、④ 檢查考試用品，三者均有助於提升表現。③ 熬夜讀書會導致睡眠不足、記憶力與專注度下降，反而不利於考試表現。故只有 ①②④ 有所幫助。"
+            },
+            {
+                id: 17,
+                tag: "升學選校",
+                q: "「交通機能」屬於升學選校條件中的哪一個向度？",
+                options: ["個人條件", "環境條件", "學校相關條件", "他人條件"],
+                ans: 2,
+                exp: "依據升學選校條件劃分：「學校相關條件」包含學校別、特色課程、錄取門檻、交通機能等；「個人條件」包含興趣、能力、特質、健康狀況；「環境條件」包含家庭經濟、同儕團體、師長期許等。"
+            },
+            {
+                id: 18,
+                tag: "學制選擇",
+                q: "小俞是即將從國中畢業的女學生，想要繼續升學但有學費壓力，請問她最適合報考哪一類型的學制，以減輕經濟負擔？",
+                options: ["五專", "軍校", "綜合型高中", "建教合作班"],
+                ans: 1,
+                exp: "軍校 (如陸軍專科學校等) 在就讀期間由國家提供免學雜費、提供食宿並發給生活津貼/津貼補助，能最顯著且實質地減輕個人的經濟負擔。"
+            },
+            {
+                id: 19,
+                tag: "高校調查",
+                q: "若想進一步了解某高校的生活，可設定調查內容並透過當面或電話訪談方式進行了解。下列有關調查的注意事項，何者有誤？",
+                options: [
+                    "訪談前應擬定與整理問題",
+                    "訪談中即興發問，問題最為真實",
+                    "調查內容可包含學程群科、學校位置、校園環境等",
+                    "若是當面訪談，可邀請受訪者合照"
+                ],
+                ans: 1,
+                exp: "進行訪談前必須先擬定訪談大綱與題目，盲目進行「即興發問」容易導致訪問缺乏焦點、遺漏重要資訊甚至顯得不專業，故 (B) 的敘述有誤。"
+            },
+            {
+                id: 20,
+                tag: "壓力調適",
+                q: "下列何者有助於我們在面對壓力時，減輕情緒的負荷指數？",
+                options: ["虛弱的體質", "強健的體魄", "軟弱的心靈", "冷漠的態度"],
+                ans: 1,
+                exp: "「強健的體魄」能提供充沛的生理能量與抗壓韌性，有助於調節生理機能並降低面對壓力時的情緒負荷。"
+            },
+            {
+                id: 21,
+                tag: "學習診斷",
+                q: "想要了解自己目前的學習狀態，可以透過檢視「考試成績滿意度」與下列何者之間的關聯性？",
+                options: ["考試成績不滿意度", "學科課堂數", "學習投入程度", "學科考試次數"],
+                ans: 2,
+                exp: "檢視「學習投入程度 (讀書時間、專注度、練習量)」與「考試成績滿意度」之間的對比與關聯，能清楚反映出自己的學習效率與方法是否需要調整。"
+            },
+            {
+                id: 22,
+                tag: "生涯金三角",
+                q: "了解家庭、學校等重要他人的影響，如師長期待。亦可從社會經濟發展趨勢下，釐清對於自身生涯抉擇的助力與阻力。這是屬於生涯金三角的哪個面向？",
+                options: ["自我認識", "學習環境", "社會環境關係", "教育與職業資源"],
+                ans: 2,
+                exp: "考慮家庭、師長期待、同儕以及社會經濟發展趨勢等外部人際與社會環境對個人的影響，屬於生涯金三角中的「社會環境關係」。"
+            },
+            {
+                id: 23,
+                tag: "學習技巧",
+                q: "呂宗昕教授提出的一又四分之三讀書法，為何他認為書至少要念三遍？",
+                options: [
+                    "因為念第一遍要摘要課本重點，第二遍要將重點以關鍵字形式寫下來，第三遍要總結筆記重點",
+                    "因為念第一遍時僅有模糊的印象，第二遍才會有清晰的輪廓及具體的認識，第三遍之後才能融會貫通並可掌握書中的精義",
+                    "因為念第一遍的目的是從錯誤中學習，第二遍是不犯相同的錯誤，第三遍是提高學習成績",
+                    "因為念第一遍要把重點抄下來，第二遍要依照該重點抄在筆記本上，第三遍要在空白處寫上分析原因"
+                ],
+                ans: 1,
+                exp: "呂宗昕教授推廣的複習理念中強調多遍複習的遞進效果：第一遍建立整體印象，第二遍構建清晰輪廓與具體架構，第三遍則能進一步融會貫通並掌握核心精義。"
+            },
+            {
+                id: 24,
+                tag: "生涯準備",
+                q: "身為國中三年級的學生，現階段的自己可以做哪些準備以幫助生涯目標的達成？",
+                options: [
+                    "每天放學後撥出時間打電動，釋放壓力",
+                    "請教師長並規畫升學方向",
+                    "參加免試入學，放棄會考",
+                    "埋頭念書，會考前不與同學往來"
+                ],
+                ans: 1,
+                exp: "國三學生應適時請教師長、蒐集升學資訊並及早規畫個人的升學目標與方向。沉迷電玩、放棄會考或封閉交友皆非積極健全的生涯準備方式。"
+            },
+            {
+                id: 25,
+                tag: "升學選校",
+                q: "下列哪一個項目不屬於升學選校條件中的「環境條件」？",
+                options: ["家庭經濟", "同儕團體", "師長期許", "健康狀況"],
+                ans: 3,
+                exp: "「環境條件」包含家庭經濟 (A)、同儕團體 (B)、師長期許 (C) 等外部環境因子。「健康狀況」屬於個體本身的生理與內在狀態，歸類於「個人條件 (自我認識)」，故不屬於環境條件。"
+            }
+        ];
+
+        // Global State
+        let currentMode = 'exam'; // 'exam' | 'practice'
+        let userAnswers = new Array(questions.length).fill(null);
+        let examSubmitted = false;
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let resultFilter = 'all'; // 'all' | 'wrong' | 'correct'
+
+        // DOM Loaded Init
+        document.addEventListener('DOMContentLoaded', () => {
+            initApp();
+        });
+
+        function initApp() {
+            startTimer();
+            updateModeUI();
+            renderQuestions();
+            renderMapGrid();
+            updateProgress();
+        }
+
+        // Timer Logic
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerSeconds = 0;
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+            const secs = (timerSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('timer-display').textContent = `${mins}:${secs}`;
+        }
+
+        // Switch Operating Mode
+        function switchMode(newMode) {
+            if (currentMode === newMode) return;
+            
+            // If user answered any question in exam mode, prompt confirmation
+            const answeredCount = userAnswers.filter(a => a !== null).length;
+            if (answeredCount > 0 && !examSubmitted) {
+                openConfirmModal(
+                    "切換模式將重置目前進度",
+                    `您已經回答了 ${answeredCount} 道題目，切換模式將會清空作答記錄。確定要切換嗎？`,
+                    "確定切換",
+                    () => {
+                        currentMode = newMode;
+                        resetQuiz();
+                    }
+                );
+            } else {
+                currentMode = newMode;
+                resetQuiz();
+            }
+        }
+
+        function updateModeUI() {
+            const examBtn = document.getElementById('mode-exam-btn');
+            const practiceBtn = document.getElementById('mode-practice-btn');
+            const noticeTitle = document.getElementById('notice-title');
+            const noticeDesc = document.getElementById('notice-desc');
+            const submitBar = document.getElementById('submit-bar');
+
+            if (currentMode === 'exam') {
+                examBtn.className = "px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 bg-white text-indigo-700 shadow flex items-center space-x-2";
+                practiceBtn.className = "px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 text-indigo-200 hover:text-white flex items-center space-x-2";
+                
+                noticeTitle.textContent = "考試模式說明";
+                noticeDesc.textContent = "作答過程中不顯示解說與正解。請完整回答所有 25 道題目後，點擊頁尾的「提交試卷」按鈕產生成績單與檢視對錯分析。";
+                submitBar.classList.remove('hidden');
+            } else {
+                practiceBtn.className = "px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 bg-white text-indigo-700 shadow flex items-center space-x-2";
+                examBtn.className = "px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 text-indigo-200 hover:text-white flex items-center space-x-2";
+                
+                noticeTitle.textContent = "練習模式說明";
+                noticeDesc.textContent = "點擊任意選項後，將立即高亮顯示對錯與正確答案，並同步在題目下方展開該題的詳細解說。適合單題自主訓練！";
+                submitBar.classList.add('hidden');
+            }
+        }
+
+        // Render All Question Cards
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                const userAns = userAnswers[index];
+                const isAnswered = userAns !== null;
+                const isCorrect = isAnswered && userAns === q.ans;
+                const isWrong = isAnswered && userAns !== q.ans;
+
+                // Filter logic after exam submission
+                if (examSubmitted && currentMode === 'exam') {
+                    if (resultFilter === 'wrong' && isCorrect) return;
+                    if (resultFilter === 'correct' && !isCorrect) return;
+                }
+
+                const card = document.createElement('div');
+                card.id = `q-card-${index}`;
+                card.className = "bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-7 transition-all duration-200 animate-fade-in hover:shadow-md";
+
+                // Question Header
+                let headerBadgeHTML = `<span class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700">第 ${q.id} 題</span>`;
+                headerBadgeHTML += `<span class="px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">${q.tag}</span>`;
+
+                if (currentMode === 'practice' && isAnswered) {
+                    if (isCorrect) {
+                        headerBadgeHTML += `<span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 ml-auto flex items-center space-x-1"><i class="fa-solid fa-circle-check"></i><span>答對</span></span>`;
+                    } else {
+                        headerBadgeHTML += `<span class="px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700 ml-auto flex items-center space-x-1"><i class="fa-solid fa-circle-xmark"></i><span>答錯</span></span>`;
+                    }
+                } else if (examSubmitted && currentMode === 'exam') {
+                    if (isCorrect) {
+                        headerBadgeHTML += `<span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 ml-auto flex items-center space-x-1"><i class="fa-solid fa-circle-check"></i><span>答對 (+4分)</span></span>`;
+                    } else {
+                        headerBadgeHTML += `<span class="px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700 ml-auto flex items-center space-x-1"><i class="fa-solid fa-circle-xmark"></i><span>答錯 (0分)</span></span>`;
+                    }
+                }
+
+                // Options HTML
+                let optionsHTML = '<div class="mt-4 space-y-3">';
+                q.options.forEach((optText, optIdx) => {
+                    const optLetter = String.fromCharCode(65 + optIdx); // A, B, C, D
+                    let btnStyle = "border-slate-200 hover:border-indigo-400 hover:bg-slate-50 text-slate-700";
+                    let letterStyle = "bg-slate-100 text-slate-600 border-slate-200";
+                    let iconHTML = '';
+
+                    const isSelected = userAns === optIdx;
+                    const isRightAns = q.ans === optIdx;
+
+                    if (currentMode === 'practice' && isAnswered) {
+                        if (isRightAns) {
+                            btnStyle = "border-emerald-500 bg-emerald-50 text-emerald-900 font-semibold shadow-sm";
+                            letterStyle = "bg-emerald-600 text-white border-emerald-600";
+                            iconHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-lg ml-auto"></i>`;
+                        } else if (isSelected && !isRightAns) {
+                            btnStyle = "border-rose-400 bg-rose-50 text-rose-900 font-semibold";
+                            letterStyle = "bg-rose-500 text-white border-rose-500";
+                            iconHTML = `<i class="fa-solid fa-circle-xmark text-rose-500 text-lg ml-auto"></i>`;
+                        } else {
+                            btnStyle = "border-slate-200 text-slate-400 opacity-60 cursor-not-allowed";
+                        }
+                    } else if (examSubmitted && currentMode === 'exam') {
+                        if (isRightAns) {
+                            btnStyle = "border-emerald-500 bg-emerald-50 text-emerald-900 font-semibold shadow-sm";
+                            letterStyle = "bg-emerald-600 text-white border-emerald-600";
+                            iconHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-lg ml-auto"></i>`;
+                        } else if (isSelected && !isRightAns) {
+                            btnStyle = "border-rose-400 bg-rose-50 text-rose-900 font-semibold";
+                            letterStyle = "bg-rose-500 text-white border-rose-500";
+                            iconHTML = `<i class="fa-solid fa-circle-xmark text-rose-500 text-lg ml-auto"></i>`;
+                        } else {
+                            btnStyle = "border-slate-100 text-slate-400 opacity-60";
+                        }
+                    } else if (isSelected) {
+                        // Exam mode selecting
+                        btnStyle = "border-indigo-600 bg-indigo-50/80 text-indigo-900 font-semibold shadow-sm ring-1 ring-indigo-600";
+                        letterStyle = "bg-indigo-600 text-white border-indigo-600";
+                        iconHTML = `<i class="fa-solid fa-circle-dot text-indigo-600 text-lg ml-auto"></i>`;
+                    }
+
+                    const disabledAttr = (currentMode === 'practice' && isAnswered) || examSubmitted ? 'disabled' : '';
+
+                    optionsHTML += `
+                        <button onclick="selectOption(${index}, ${optIdx})" ${disabledAttr}
+                                class="w-full text-left p-3.5 sm:p-4 rounded-xl border-2 transition-all flex items-start space-x-3 text-sm sm:text-base group ${btnStyle}">
+                            <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border font-bold flex items-center justify-center flex-shrink-0 text-xs sm:text-sm ${letterStyle}">
+                                ${optLetter}
+                            </span>
+                            <span class="pt-0.5 leading-relaxed flex-grow">${optText}</span>
+                            ${iconHTML}
+                        </button>
+                    `;
+                });
+                optionsHTML += '</div>';
+
+                // Explanation Box (Show in practice mode when answered OR in exam mode post-submit)
+                let expHTML = '';
+                const showExplanation = (currentMode === 'practice' && isAnswered) || examSubmitted;
+                
+                if (showExplanation) {
+                    expHTML = `
+                        <div class="mt-5 p-4 rounded-xl bg-amber-50/90 border border-amber-200 text-slate-800 text-sm leading-relaxed animate-fade-in">
+                            <div class="flex items-center space-x-2 font-bold text-amber-900 mb-2">
+                                <i class="fa-solid fa-lightbulb text-amber-500 text-base"></i>
+                                <span>【詳細題目解析】</span>
+                            </div>
+                            <p class="text-slate-700 leading-relaxed">${q.exp}</p>
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="flex flex-wrap items-center gap-2 mb-3">
+                        ${headerBadgeHTML}
+                    </div>
+                    <h3 class="text-base sm:text-lg font-bold text-slate-800 leading-snug">
+                        ${q.q}
+                    </h3>
+                    ${optionsHTML}
+                    ${expHTML}
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // Option Select Action
+        function selectOption(questionIndex, optionIndex) {
+            if (examSubmitted && currentMode === 'exam') return;
+
+            userAnswers[questionIndex] = optionIndex;
+
+            renderQuestions();
+            renderMapGrid();
+            updateProgress();
+        }
+
+        // Progress Update
+        function updateProgress() {
+            const answeredCount = userAnswers.filter(a => a !== null).length;
+            const total = questions.length;
+            const pct = Math.round((answeredCount / total) * 100);
+
+            document.getElementById('progress-text').textContent = `${answeredCount} / ${total}`;
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+        }
+
+        // Question Map Navigation Grid
+        function renderMapGrid() {
+            const grid = document.getElementById('map-grid');
+            grid.innerHTML = '';
+
+            questions.forEach((q, idx) => {
+                const userAns = userAnswers[idx];
+                const isAnswered = userAns !== null;
+                const isCorrect = isAnswered && userAns === q.ans;
+
+                let btnClass = "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200";
+
+                if (currentMode === 'practice' && isAnswered) {
+                    btnClass = isCorrect ? "bg-emerald-600 border-emerald-600 text-white font-bold" : "bg-rose-500 border-rose-500 text-white font-bold";
+                } else if (examSubmitted && currentMode === 'exam') {
+                    btnClass = isCorrect ? "bg-emerald-600 border-emerald-600 text-white font-bold" : "bg-rose-500 border-rose-500 text-white font-bold";
+                } else if (isAnswered) {
+                    btnClass = "bg-indigo-600 border-indigo-600 text-white font-bold";
+                }
+
+                const btn = document.createElement('button');
+                btn.className = `h-10 rounded-xl border text-sm transition font-mono flex items-center justify-center ${btnClass}`;
+                btn.textContent = idx + 1;
+                btn.onclick = () => {
+                    toggleMapModal();
+                    scrollToQuestion(idx);
+                };
+
+                grid.appendChild(btn);
+            });
+        }
+
+        function scrollToQuestion(index) {
+            const el = document.getElementById(`q-card-${index}`);
+            if (el) {
+                const yOffset = -140; 
+                const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            }
+        }
+
+        function toggleMapModal() {
+            const modal = document.getElementById('map-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        // Confirm Submit Exam Modal
+        function confirmSubmitExam() {
+            const answeredCount = userAnswers.filter(a => a !== null).length;
+            const unanswered = questions.length - answeredCount;
+
+            if (unanswered > 0) {
+                openConfirmModal(
+                    "尚未完成所有題目",
+                    `您目前還有 ${unanswered} 道題目尚未作答，確定要現在交卷計算成績嗎？`,
+                    "確定提交試卷",
+                    submitExam
+                );
+            } else {
+                openConfirmModal(
+                    "確定要提交試卷嗎？",
+                    "您已完成所有題目的回答，提交後將為您計分並分析正確率與錯題。",
+                    "確認交卷",
+                    submitExam
+                );
+            }
+        }
+
+        function submitExam() {
+            stopTimer();
+            examSubmitted = true;
+
+            // Calculate Score (4 pts per question)
+            let correctCount = 0;
+            userAnswers.forEach((ans, idx) => {
+                if (ans === questions[idx].ans) correctCount++;
+            });
+
+            const score = correctCount * 4;
+            const wrongCount = questions.length - correctCount - userAnswers.filter(a => a === null).length;
+            const unansweredCount = userAnswers.filter(a => a === null).length;
+
+            // Update Scoreboard UI
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('stat-correct').textContent = correctCount;
+            document.getElementById('stat-wrong').textContent = wrongCount;
+            document.getElementById('stat-unanswered').textContent = unansweredCount;
+            document.getElementById('time-spent').textContent = document.getElementById('timer-display').textContent;
+
+            // Performance tag & text
+            const badge = document.getElementById('performance-tag');
+            const msg = document.getElementById('performance-msg');
+            const scoreBadge = document.getElementById('score-badge');
+
+            if (score >= 90) {
+                badge.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800";
+                badge.textContent = "🏆 卓越標竿";
+                msg.textContent = "太厲害了！你對國三生涯規劃與學習技巧概念掌握極其熟練！";
+                scoreBadge.className = "w-24 h-24 rounded-full flex flex-col items-center justify-center text-white font-bold shadow-lg bg-emerald-600";
+            } else if (score >= 75) {
+                badge.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800";
+                badge.textContent = "✨ 表現優良";
+                msg.textContent = "非常棒！絕大多數的核心概念你都精確掌握了，建議複習錯題以求更加完美。";
+                scoreBadge.className = "w-24 h-24 rounded-full flex flex-col items-center justify-center text-white font-bold shadow-lg bg-indigo-600";
+            } else if (score >= 60) {
+                badge.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800";
+                badge.textContent = "👍 達標通過";
+                msg.textContent = "表現不錯，已達到基礎標準。建議參考詳細解析，將觀念再做進一步釐清。";
+                scoreBadge.className = "w-24 h-24 rounded-full flex flex-col items-center justify-center text-white font-bold shadow-lg bg-amber-500";
+            } else {
+                badge.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800";
+                badge.textContent = "💪 再接再厲";
+                msg.textContent = "再加把勁！建議可以切換到「練習模式」逐題對照解答與觀念說明重新學習！";
+                scoreBadge.className = "w-24 h-24 rounded-full flex flex-col items-center justify-center text-white font-bold shadow-lg bg-rose-600";
+            }
+
+            document.getElementById('exam-results-card').classList.remove('hidden');
+            document.getElementById('submit-bar').classList.add('hidden');
+
+            renderQuestions();
+            renderMapGrid();
+
+            // Scroll smoothly to results card
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Result Filter (All / Wrong / Correct)
+        function setResultFilter(filter) {
+            resultFilter = filter;
+            
+            const btnAll = document.getElementById('filter-all');
+            const btnWrong = document.getElementById('filter-wrong');
+            const btnCorrect = document.getElementById('filter-correct');
+
+            const activeClass = "px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-indigo-600 text-white shadow-sm";
+            const inactiveClass = "px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-slate-100 text-slate-600 hover:bg-slate-200";
+
+            btnAll.className = filter === 'all' ? activeClass : inactiveClass;
+            btnWrong.className = filter === 'wrong' ? activeClass : inactiveClass;
+            btnCorrect.className = filter === 'correct' ? activeClass : inactiveClass;
+
+            renderQuestions();
+        }
+
+        // Reset Quiz
+        function confirmReset() {
+            openConfirmModal(
+                "重置練習紀錄",
+                "確定要清空目前的答題進度並重新開始嗎？",
+                "確定重置",
+                resetQuiz
+            );
+        }
+
+        function resetQuiz() {
+            userAnswers = new Array(questions.length).fill(null);
+            examSubmitted = false;
+            resultFilter = 'all';
+
+            document.getElementById('exam-results-card').classList.add('hidden');
+            
+            updateModeUI();
+            startTimer();
+            renderQuestions();
+            renderMapGrid();
+            updateProgress();
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Generic Confirmation Modal Helper
+        let pendingConfirmAction = null;
+
+        function openConfirmModal(title, desc, actionText, actionFn) {
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-desc').textContent = desc;
+            
+            const actionBtn = document.getElementById('confirm-action-btn');
+            actionBtn.textContent = actionText;
+            
+            pendingConfirmAction = actionFn;
+            actionBtn.onclick = () => {
+                if (pendingConfirmAction) pendingConfirmAction();
+                closeConfirmModal();
+            };
+
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            pendingConfirmAction = null;
+        }
+    </script>
+</body>
+</html>
